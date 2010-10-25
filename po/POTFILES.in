@@ -1,0 +1,5 @@
+[type: gettext/glade]src/ppm.ui
+[type: gettext/glade]src/ppm-modem-request.ui
+[type: gettext/glade]src/ppm-provider-assistant.ui
+src/prepaid-manager-applet.desktop.in
+src/prepaid-manager-applet.py

@@ -1,0 +1,161 @@
+# German translation of prepaid-manager-applet
+# Copyright (C) 2010 Guido Günther <agx@sigxcpu.org>
+# This file is distributed under the same license as the prepaid-manager-applet
+# package.
+# Guido Günther <agx@sigxcpu.org>, 2010
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-11-17 18:32+0100\n"
+"PO-Revision-Date: 2010-11-11 13:38+0100\n"
+"Last-Translator: Guido Günther <agx@sigxcpu.org>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: German\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/ppm.ui.h:1
+msgid "Balance"
+msgstr "Guthaben"
+
+#: ../src/ppm.ui.h:2
+msgid "Balance information from"
+msgstr "Guthaben Information vom"
+
+#: ../src/ppm.ui.h:3
+msgid "Balance unknown"
+msgstr "Guthaben unbekannt"
+
+#: ../src/ppm.ui.h:4
+msgid "Change provider"
+msgstr "Provider wechseln"
+
+#: ../src/ppm.ui.h:5
+msgid "Check your prepaid cards balance."
+msgstr "Überprüfen Sie das Guthaben auf ihrer Prepaid Karte."
+
+#: ../src/ppm.ui.h:6
+msgid "Code:"
+msgstr "Code:"
+
+#: ../src/ppm.ui.h:7
+msgid "Enter code to top up credit to your prepaid card."
+msgstr "Geben Sie den Code ein um Guthaben auf ihre Prepaid-Karte zu laden."
+
+#: ../src/ppm.ui.h:8 ../src/ppm-modem-request.ui.h:1
+#: ../src/prepaid-manager-applet.desktop.in.h:1
+msgid "Prepaid Manager"
+msgstr "Prepaid Manager"
+
+#: ../src/ppm.ui.h:9
+msgid "Provider:"
+msgstr "Provider:"
+
+#: ../src/ppm.ui.h:10
+msgid "Top up"
+msgstr "Aufladen"
+
+#: ../src/ppm.ui.h:11
+msgid "Top up your prepaid accounts balance"
+msgstr ""
+
+#: ../src/ppm.ui.h:12
+msgid "change"
+msgstr ""
+
+#: ../src/ppm.ui.h:13
+msgid "check"
+msgstr ""
+
+#: ../src/ppm.ui.h:14
+msgid "top up"
+msgstr "Aufladen"
+
+#: ../src/ppm.ui.h:15
+msgid "unknown"
+msgstr "unbekannt"
+
+#: ../src/ppm.ui.h:16
+msgid "unknown provider"
+msgstr "unbekannter Provider"
+
+#: ../src/ppm-modem-request.ui.h:2
+msgid "Sending request to modem"
+msgstr "Sende Anfrage an das Modem"
+
+#: ../src/ppm-modem-request.ui.h:3
+msgid "Waiting for reply..."
+msgstr "Warte auf Antwort..."
+
+#: ../src/ppm-provider-assistant.ui.h:1
+msgid "Check your selection"
+msgstr "Überprüfen Sie Ihre Auswahl"
+
+#: ../src/ppm-provider-assistant.ui.h:2
+msgid "Please select the country of your mobile broadband provider."
+msgstr ""
+
+#: ../src/ppm-provider-assistant.ui.h:3
+msgid "Please select your mobile broadband provider."
+msgstr ""
+
+#: ../src/ppm-provider-assistant.ui.h:4
+msgid ""
+"Prepaid Manager couldn't autodetect your mobile broadband provider. The "
+"following pages will guide you through the process of setting it up."
+msgstr ""
+
+#: ../src/ppm-provider-assistant.ui.h:5
+msgid "Provider configuration"
+msgstr "Provider Konfiguration"
+
+#: ../src/ppm-provider-assistant.ui.h:6
+msgid "Select your country"
+msgstr "Wählen Sie ihr Land aus"
+
+#: ../src/ppm-provider-assistant.ui.h:7
+msgid "Select your provider"
+msgstr "Wählen Sie ihren Provider aus"
+
+#: ../src/ppm-provider-assistant.ui.h:8
+msgid "Your mobile broadband provider is"
+msgstr "Ihr Provider für den mobilen Breitbandanschluß ist"
+
+#: ../src/ppm-provider-assistant.ui.h:9
+msgid "in"
+msgstr "in"
+
+#: ../src/prepaid-manager-applet.desktop.in.h:2
+msgid "Prepaid Manager Applet for GSM"
+msgstr "Prepaid Manager Applet für GSM"
+
+#: ../src/prepaid-manager-applet.py:281
+msgid "Enable Modem?"
+msgstr "Modem aktivieren?"
+
+#: ../src/prepaid-manager-applet.py:395
+#, python-format
+msgid ""
+"We can't find the information on how to query the account balance from your "
+"provider '%s' in our database."
+msgstr ""
+
+#: ../src/prepaid-manager-applet.py:398
+#, python-format
+msgid ""
+"We can't find any information about your provider with mcc '%s' and mnc '%s'."
+msgstr ""
+
+#: ../src/prepaid-manager-applet.py:401
+#, python-format
+msgid ""
+"\n"
+"\n"
+"You can go to %s to learn how to provide that information."
+msgstr ""
+
+#~ msgid "Statistics"
+#~ msgstr "Statistiken"

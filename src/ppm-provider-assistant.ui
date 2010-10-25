@@ -1,0 +1,209 @@
+<?xml version="1.0"?>
+<interface>
+  <requires lib="gtk+" version="2.16"/>
+  <!-- interface-naming-policy project-wide -->
+  <object class="GtkListStore" id="liststore_providers">
+    <columns>
+      <!-- column-name column_provider -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkListStore" id="liststore_countries">
+    <columns>
+      <!-- column-name column_countries -->
+      <column type="gchararray"/>
+      <!-- column-name column_country_codes -->
+      <column type="gchararray"/>
+    </columns>
+  </object>
+  <object class="GtkAssistant" id="ppm_provider_assistant">
+    <property name="border_width">12</property>
+    <property name="title">Provider Configuration</property>
+    <property name="modal">True</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip-pager-hint">True</property>
+    <property name="skip-taskbar-hint">True</property>
+    <signal name="prepare" handler="on_ppm_provider_assistant_prepare"/>
+    <signal name="cancel" handler="on_ppm_provider_assistant_cancel"/>
+    <signal name="close" handler="on_ppm_provider_assistant_close"/>
+    <child>
+      <placeholder/>
+    </child>
+    <child>
+      <object class="GtkLabel" id="label1">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">Prepaid Manager couldn't autodetect your mobile broadband provider. The following pages will guide you through the process of setting it up.</property>
+        <property name="wrap">True</property>
+      </object>
+      <packing>
+        <property name="page_type">intro</property>
+        <property name="complete">True</property>
+        <property name="title" translatable="yes">Provider configuration</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkVBox" id="vbox_countries">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel" id="label_countries">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Please select the country of your mobile broadband provider.</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">10</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="scrolledwindow1">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">automatic</property>
+            <property name="vscrollbar_policy">automatic</property>
+            <property name="shadow_type">in</property>
+            <child>
+              <object class="GtkTreeView" id="treeview_countries">
+                <property name="height_request">200</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="model">liststore_countries</property>
+                <property name="search_column">0</property>
+                <signal name="cursor_changed" handler="on_treeview_countries_changed"/>
+                <child>
+                  <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                    <property name="title">Country</property>
+                    <property name="sort_column_id">0</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="renderer_countries"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="title" translatable="yes">Select your country</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkVBox" id="vbox_providers">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel" id="label_providers">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Please select your mobile broadband provider.</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="padding">10</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="scrolledwindow2">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">automatic</property>
+            <property name="vscrollbar_policy">automatic</property>
+            <property name="shadow_type">in</property>
+            <child>
+              <object class="GtkTreeView" id="treeview_providers">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="model">liststore_providers</property>
+                <property name="search_column">0</property>
+                <signal name="cursor_changed" handler="on_treeview_providers_changed"/>
+                <child>
+                  <object class="GtkTreeViewColumn" id="treeviewcolumn_providers">
+                    <property name="title">Providers</property>
+                    <property name="sort_column_id">0</property>
+                    <child>
+                      <object class="GtkCellRendererText" id="renderer_providers"/>
+                      <attributes>
+                        <attribute name="text">0</attribute>
+                      </attributes>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="title" translatable="yes">Select your provider</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkVBox" id="vbox_confirm">
+        <property name="visible">True</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkLabel" id="label_provider0">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Your mobile broadband provider is</property>
+            <property name="wrap">True</property>
+          </object>
+          <packing>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_provider">
+            <property name="visible">True</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_country0">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">in</property>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_country">
+            <property name="visible">True</property>
+            <attributes>
+              <attribute name="weight" value="bold"/>
+            </attributes>
+          </object>
+          <packing>
+            <property name="position">3</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="page_type">confirm</property>
+        <property name="complete">True</property>
+        <property name="title" translatable="yes">Check your selection</property>
+      </packing>
+    </child>
+  </object>
+</interface>

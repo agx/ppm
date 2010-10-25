@@ -1,0 +1,14 @@
+config.log
+config.status
+aclocal.m4
+autom4te.cache/
+configure
+COPYING
+gnome-doc-utils.make
+INSTALL
+install-sh
+Makefile
+Makefile.in
+missing
+mkinstalldirs
+prepaid-manager-applet-*.tar.gz

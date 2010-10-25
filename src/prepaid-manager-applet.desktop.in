@@ -1,0 +1,6 @@
+[Desktop Entry]
+_Name=Prepaid Manager
+_Comment=Prepaid Manager Applet for GSM
+Exec=prepaid-manager-applet
+Terminal=false
+Type=Application

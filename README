@@ -1,0 +1,26 @@
+About
+-----
+prepaid-manager-applet aims to ease the handling of mobile internet connections
+using GSM mobile prepaid cards on the GNOME Desktop. Such a SIM card can either
+be in a mobile phone used as a modem, a usb 3g module (usb surf stick) or used
+by the built in 3G chipset in your laptop/netbook.
+
+* It allows you to check the current balance and to top up the credit.
+* It uses ModemManager to talk to your GSM chipset.
+
+Requirements
+------------
+* ModemManager with ussd support (current git)
+* mobile-broadband-provider-info with top-up support:
+    http://git.debian.org/?p=users/agx/mobile-broadband-provider-info.git
+* pygtk2 >= 2.17
+
+Project Page
+------------
+https://honk.sigxcpu.org/piki/projects/ppm
+
+Contact
+-------
+Send comments, patches and suggestions to 
+
+Guido Günther <agx@sigxcpu.org>

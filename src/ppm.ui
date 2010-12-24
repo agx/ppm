@@ -99,6 +99,7 @@
                   <object class="GtkLabel" id="label_balance_info">
                     <property name="visible">True</property>
                     <property name="label" translatable="yes">Balance unknown</property>
+                    <property name="wrap">True</property>
                     <attributes>
                       <attribute name="style" value="normal"/>
                       <attribute name="weight" value="bold"/>

@@ -21,9 +21,9 @@
 import dbus
 import dbus.mainloop.glib
 import gettext
-import gobject
+from gi.repository import GObject
 import glib
-import gtk
+from gi.repository import Gtk
 import locale
 import logging
 import os
@@ -37,7 +37,7 @@ from ppm.providerdb import ProviderDB
 # The controller receives input and initiates a response by making calls on model
 # objects. A controller accepts input from the user and instructs the model and
 # view to perform actions based on that input.
-class PPMController(gobject.GObject):
+class PPMController(GObject.GObject):
     """
     @ivar providers: the possible providers
     @ivar provider: current provider
@@ -45,7 +45,7 @@ class PPMController(gobject.GObject):
 
     __gsignals__ = {
         # Emitted when we got the new account balance from the provider
-        'balance-info-fetched': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE,
+        'balance-info-fetched': (GObject.SignalFlags.RUN_FIRST, None,
                                  [object]),
         }
 
@@ -118,7 +118,7 @@ class PPMController(gobject.GObject):
                 self.view.show_modem_error(me.msg)
                 return False
             logging.info("modem not enabled")
-            if self.view.show_modem_enable() != gtk.RESPONSE_YES:
+            if self.view.show_modem_enable() != Gtk.ResponseType.YES:
                 return False
             else:
                 self.mm.modem_enable(reply_func=self.init_current_provider)
@@ -135,7 +135,7 @@ class PPMController(gobject.GObject):
             modem = modems[0] # FIXME: handle multiple modems
             logging.debug("Using modem %s" % modem)
             self.mm.set_modem(modem)
-            glib.timeout_add(500, self.init_current_provider)
+            GObject.timeout_add(500, self.init_current_provider)
         else:        
             self.view.show_error("No modem found.")
             self.quit()
@@ -145,7 +145,7 @@ class PPMController(gobject.GObject):
         """Clean up"""
         logging.debug("Quitting...")
         self.view.close()
-        gtk.main_quit()
+        Gtk.main_quit()
 
     def get_provider_countries(self):
         return self.providerdb.get_countries()
@@ -174,7 +174,7 @@ class PPMController(gobject.GObject):
         self.view.show_modem_error(e.msg)
         logging.error(e.msg)
     
-gobject.type_register(PPMController)
+GObject.type_register(PPMController)
 
 
 class PPMObject(object):
@@ -188,7 +188,7 @@ class PPMObject(object):
 
     def _load_ui(self, ui):
         """Load the user interfade description"""
-        self.builder = gtk.Builder()
+        self.builder = Gtk.Builder()
         self.builder.set_translation_domain(ppm.gettext_app)
         self.builder.add_from_file(os.path.join(ppm.ui_dir, '%s.ui' % ui))
         self.builder.connect_signals(self)
@@ -201,7 +201,7 @@ class PPMObject(object):
             self._add_elem(name)
     
 # View
-class PPMDialog(gobject.GObject, PPMObject):
+class PPMDialog(GObject.GObject, PPMObject):
     
     def _init_subdialogs(self):
         self.provider_info_missing_dialog = PPMProviderInfoMissingDialog(self)
@@ -284,22 +284,22 @@ class PPMDialog(gobject.GObject, PPMObject):
         self.provider_info_missing_dialog.provider_unknown(mcc, mnc)
 
     def show_modem_error(self, msg):
-        dialog = gtk.MessageDialog(parent=self.dialog,
-                                   flags=gtk.DIALOG_MODAL |
-                                         gtk.DIALOG_DESTROY_WITH_PARENT,
-                                   type=gtk.MESSAGE_ERROR,
-                                   buttons=gtk.BUTTONS_OK)
+        dialog = Gtk.MessageDialog(parent=self.dialog,
+                                   flags=Gtk.DialogFlags.MODAL |
+                                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                   type=Gtk.MessageType.ERROR,
+                                   buttons=Gtk.ButtonsType.OK)
         dialog.set_markup("Modem error: %s" % msg)
         dialog.run()
         dialog.hide()
 
     def show_modem_enable(self):
         """Show dialog that asks if we should enable the modem"""
-        dialog = gtk.MessageDialog(parent=self.dialog,
-                                   flags=gtk.DIALOG_MODAL |
-                                         gtk.DIALOG_DESTROY_WITH_PARENT,
-                                   type=gtk.MESSAGE_QUESTION,
-                                   buttons=gtk.BUTTONS_YES_NO)
+        dialog = Gtk.MessageDialog(parent=self.dialog,
+                                   flags=Gtk.DialogFlags.MODAL |
+                                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                   type=Gtk.MessageType.QUESTION,
+                                   buttons=Gtk.ButtonsType.YES_NO)
         dialog.set_markup(_("Enable Modem?"))
         ret = dialog.run()
         dialog.hide()
@@ -311,11 +311,11 @@ class PPMDialog(gobject.GObject, PPMObject):
     def show_error(self, msg):
         """show generic error"""
         logging.debug(msg)
-        error = gtk.MessageDialog(parent=self.dialog,
-                                  flags=gtk.DIALOG_MODAL |
-                                        gtk.DIALOG_DESTROY_WITH_PARENT,
-                                  type=gtk.MESSAGE_ERROR,
-                                  buttons=gtk.BUTTONS_OK)
+        error = Gtk.MessageDialog(parent=self.dialog,
+                                  flags=Gtk.DialogFlags.MODAL |
+                                        Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                  type=Gtk.MessageType.ERROR,
+                                  buttons=Gtk.ButtonsType.OK)
         error.set_markup(msg)
         error.run()
         error.hide()
@@ -327,7 +327,7 @@ class PPMDialog(gobject.GObject, PPMObject):
         self.modem_response.close()
 
 
-gobject.type_register(PPMDialog)
+GObject.type_register(PPMDialog)
 
 class PPMProviderAssistant(PPMObject):
 
@@ -356,7 +356,7 @@ class PPMProviderAssistant(PPMObject):
         return code
 
     def _select_country_row(self, iter):
-        path = self.liststore_countries.get_path(iter)[0]
+        path = self.liststore_countries.get_path(iter)
         treeselection = self.treeview_countries.get_selection()
         treeselection.select_path(path)
         self.treeview_countries.scroll_to_cell(path)
@@ -378,13 +378,13 @@ class PPMProviderAssistant(PPMObject):
                     self.country_code = code
                     self._select_country_row(iter)
 
-    def _providers_only_page_func(self, current_page):
+    def _providers_only_page_func(self, current_page, user_data):
         if current_page < self.PAGE_PROVIDERS:
             return self.PAGE_PROVIDERS
         else:
             return current_page+1
 
-    def _all_pages_func(self, current_page):
+    def _all_pages_func(self, current_page, user_data):
         return current_page+1
         
     def show(self, providers=None):
@@ -394,11 +394,11 @@ class PPMProviderAssistant(PPMObject):
         if not self.possible_providers:
             # No list of possible providers so allow to select the country first
             self._fill_liststore_countries()
-            self.assistant.set_forward_page_func(self._all_pages_func)
+            self.assistant.set_forward_page_func(self._all_pages_func, None)
         else:
             # List of possible providers given, all from the same country
             self.country_code = self.possible_providers[0].country
-            self.assistant.set_forward_page_func(self._providers_only_page_func)
+            self.assistant.set_forward_page_func(self._providers_only_page_func, None)
         self.assistant.show()
 
     def close(self):
@@ -465,11 +465,11 @@ class PPMProviderInfoMissingDialog(object):
                 'MobileBroadband/ServiceProviders\">website</a>')
 
     def __init__(self, main_dialog):
-        self.dialog = gtk.MessageDialog(parent=main_dialog.dialog,
-                                        flags=gtk.DIALOG_MODAL |
-                                              gtk.DIALOG_DESTROY_WITH_PARENT,
-                                        type=gtk.MESSAGE_INFO,
-                                        buttons=gtk.BUTTONS_OK)
+        self.dialog = Gtk.MessageDialog(parent=main_dialog.dialog,
+                                        flags=Gtk.DialogFlags.MODAL |
+                                              Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                        type=Gtk.MessageType.INFO,
+                                        buttons=Gtk.ButtonsType.OK)
         self.messages = {
             'balance_info_missing':
                  _("We can't find the information on how to query the "
@@ -513,13 +513,13 @@ class PPMModemResponse(PPMObject):
         self.timer = None
         
     def show(self):
-        self.timer = glib.timeout_add(50, self.do_progress,
-                                      priority=glib.PRIORITY_HIGH)
+        self.timer = GObject.timeout_add(50, self.do_progress,
+                                         priority=glib.PRIORITY_HIGH)
         self.dialog.show()
 
     def close(self):
         if self.timer:
-            glib.source_remove(self.timer)
+            GObject.source_remove(self.timer)
             self.timer = None
         self.dialog.hide()
 
@@ -550,9 +550,9 @@ def main():
 
     controller = PPMController()
     main_dialog = PPMDialog(controller)
-    glib.timeout_add(1, controller.setup)
+    GObject.timeout_add(1, controller.setup)
     
-    gtk.main()
+    Gtk.main()
 
 if __name__ == "__main__":
     try:

@@ -19,7 +19,7 @@
 import dbus
 import dbus.glib
 import dbus.service
-import gobject
+from gi.repository import GObject
 
 
 class ModemError(Exception):
@@ -33,7 +33,7 @@ class ModemError(Exception):
          return [False, True][self.msg.find("not enabled") != -1]
 
 
-class ModemManagerProxy(gobject.GObject):
+class ModemManagerProxy(GObject.GObject):
     """Interface to ModemManager DBus API
     @ivar request: current pending request to ModemManager
     @type request: string
@@ -50,9 +50,9 @@ class ModemManagerProxy(gobject.GObject):
     
     __gsignals__ = {
         # Emitted when we got the new account balance from the provider
-        'request-started':  (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE,
+        'request-started':  (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
-        'request-finished': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE,
+        'request-finished': (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
         }
 
@@ -159,4 +159,4 @@ class ModemManagerProxy(gobject.GObject):
     def modem_disable(self, reply_func=None, error_func=None):
         self._modem_enable(False)
 
-gobject.type_register(ModemManagerProxy)
+GObject.type_register(ModemManagerProxy)

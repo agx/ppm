@@ -1,6 +1,5 @@
 * Add raw mode to send arbitrary USSD commands
 * Remember settings with gsettings
-* Switch to PyGI
 * Collect balance statistics in sqlitedb
 * Handle multiple modems
 * Add support for SMS top-up messages as used by some providers

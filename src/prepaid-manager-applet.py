@@ -462,7 +462,7 @@ class PPMProviderInfoMissingDialog(object):
     """
     
     wiki_url = ('<a href = \"http://live.gnome.org/NetworkManager/'
-                'MobileBroadband/ServiceProviders\">website</a>')
+                'MobileBroadband/ServiceProviders\">GNOME Wiki</a>')
 
     def __init__(self, main_dialog):
         self.dialog = Gtk.MessageDialog(parent=main_dialog.dialog,
@@ -481,7 +481,7 @@ class PPMProviderInfoMissingDialog(object):
                  _("We can't find any information about your provider with "
                    "mcc '%s' and mnc '%s'.")
             }
-        self.common_msg = _("\n\nYou can go to %s to learn how to provide that "
+        self.common_msg = _("\n\nYou can go to the %s to learn how to provide that "
                             "information.")
 
     def _run(self, msg):

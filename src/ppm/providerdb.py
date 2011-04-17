@@ -104,9 +104,12 @@ class ProviderDB(object):
         searcher = etree.ETXPath(path)
         providers = []
 
-        for r in searcher(self.tree):
-            provider_elem = r.getparent().getparent()
-            providers.append(self._fill_provider_info(provider_elem))
+        try:
+            for r in searcher(self.tree):
+                provider_elem = r.getparent().getparent()
+                providers.append(self._fill_provider_info(provider_elem))
+        except etree.XMLSyntaxError:
+            return None
         return providers
 
     def get_provider(self, country_code, name):

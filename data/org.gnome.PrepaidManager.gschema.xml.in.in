@@ -1,0 +1,43 @@
+<schemalist>
+  <schema id="org.gnome.PrepaidManager" path="/apps/prepaid-manager/" gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="accounts" type="as">
+      <default>[]</default>
+      <_summary>Accounts</_summary>
+      <_description>
+	  List of configured accounts. The account at your GSM/UMTS provider is
+	  identified by the imsi on your SIM card.
+      </_description>
+    </key>
+  </schema>
+
+  <schema id="org.gnome.PrepaidManager.account" gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="provider" type="s">
+      <default>""</default>
+      <_summary>The providers name</_summary>
+      <_description>
+          The name of the mobile broadband provider.
+      </_description>
+    </key>
+    <key name="country" type="s">
+      <default>""</default>
+      <_summary>The country the provider operates in</_summary>
+      <_description>
+          This is the country where you bought the SIM card.
+      </_description>
+    </key>
+    <key name="balance" type="s">
+      <default>"The current balance is unknown."</default>
+      <_summary>Balance</_summary>
+      <_description>
+          The current balance of this account.
+      </_description>
+    </key>
+    <key name="timestamp" type="s">
+      <default>""</default>
+      <_summary>Update timestamp</_summary>
+      <_description>
+          The last time the balance got updated.
+      </_description>
+    </key>
+  </schema>
+</schemalist>

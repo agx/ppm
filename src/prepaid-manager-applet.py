@@ -33,6 +33,7 @@ import ppm
 from ppm.modemproxy import (ModemManagerProxy, ModemError)
 from ppm.provider import Provider
 from ppm.providerdb import ProviderDB
+from ppm.accountdb import AccountDB
 
 # The controller receives input and initiates a response by making calls on model
 # objects. A controller accepts input from the user and instructs the model and
@@ -40,13 +41,18 @@ from ppm.providerdb import ProviderDB
 class PPMController(GObject.GObject):
     """
     @ivar providers: the possible providers
+    @ivar imsi: the imsi if we could fetch it from the modem
+    @ivar account: the account associated with the SIM card
     @ivar provider: current provider
     """
 
     __gsignals__ = {
         # Emitted when we got the new account balance from the provider
-        'balance-info-fetched': (GObject.SignalFlags.RUN_FIRST, None,
+        'balance-info-changed': (GObject.SignalFlags.RUN_FIRST, None,
                                  [object]),
+        # Emitted when the provider changed
+        'provider-changed': (GObject.SignalFlags.RUN_FIRST, None,
+                             [object]),
         }
 
     def _connect_mm_signals(self):
@@ -56,14 +62,17 @@ class PPMController(GObject.GObject):
     def __init__(self):
         self.__gobject_init__()
         self.mm = None
+        self.imsi = None
         self.provider = None
+        self.account = None
         self.view = None
         self.providerdb = ProviderDB()
+        self.accountdb = AccountDB()
 
-    def get_account_balance(self):
-        return provider.balance
+        self.connect('provider-changed', self.on_provider_changed)
+        self.connect('balance-info-changed', self.on_balance_info_changed)
 
-    def fetch_balance_info(self):
+    def fetch_balance(self):
         """Fetch the current account balance from the  network"""
         if not self.provider.fetch_balance(self.mm,
                                         reply_func=self.on_balance_info_fetched,
@@ -81,20 +90,40 @@ class PPMController(GObject.GObject):
             logging.error("No idea how to top up balance for "
                           "%s in %s.", self.provider.name, self.provider.country)
 
-    def set_provider(self, provider=None, country_code=None, name=None):
-        """Change the current provider to provider and inform the view"""
+    def set_provider(self, provider=None,
+                     account=None,
+                     country_code=None, name=None):
+        """
+        Change the current provider to provider and inform the view
+
+        Input can be a provder, an account or, (name, country_code)
+        Once finished we know how to access account balance, top up, etc.
+        """
+        if account:
+            name = account.props.name
+            country_code = account.props.code
+
         if name and country_code:
             provider = self.providerdb.get_provider(country_code, name)
 
         if not provider:
-            raise Exception("No valid provider")
-        
-        self.provider = provider
-        self.view.update_provider_name(provider.name)
-        # FIXME: fetch last stored balance from db
+            raise Exception("No valid account or provider")
 
-    def _get_provider_from_mcc_mnc(self):
-        mcc, mnc = self.mm.get_network_id()
+        self.provider = provider
+        self.emit('provider-changed', provider)
+        
+    def _imsi_to_network_id(self, imsi):
+        """Extract mmc and mnc from imsi"""
+        mcc = imsi[0:3]
+        mnc = imsi[3:5]
+        return (mcc, mnc)
+
+    def _get_provider_interactive(self, imsi):
+        """
+        Given the imsi, determine the provider based on that information
+        from providerdb, request user input where ncessary
+        """
+        mcc, mnc = self._imsi_to_network_id(imsi)
         self.providers = self.providerdb.get_providers(mcc, mnc)
         if self.providers:
             if len(self.providers) > 1:
@@ -105,24 +134,48 @@ class PPMController(GObject.GObject):
         else:
             self.view.show_provider_unknown(mcc, mnc)
 
-    def init_current_provider(self):
+    def _get_account_from_accountdb(self, imsi):
+        """
+        Based on the imsi check if we already now all the account details
+        """
+        self.account = self.accountdb.fetch(imsi)
+        if self.account:
+            self.set_provider(account=self.account)
+        return self.account
+
+    def init_account_and_provider(self):
+        """Fetch the imsi deduce account and provider information"""
         try:
-            self._get_provider_from_mcc_mnc()
+            self.imsi = self.mm.get_imsi()
         except ModemError as me:
-            logging.warning("Can't get network id: %s", me.msg)
+            logging.warning("Can't get imsi: %s", me.msg)
             if me.is_forbidden():
-                # FIXME: fetch last provider from GSettings       
                 self.view.show_provider_assistant()
                 return False
             if not me.is_disabled():
                 self.view.show_modem_error(me.msg)
                 return False
+
             logging.info("modem not enabled")
             if self.view.show_modem_enable() != Gtk.ResponseType.YES:
                 return False
             else:
-                self.mm.modem_enable(reply_func=self.init_current_provider)
+                self.mm.modem_enable(reply_func=self.init_account_and_provider)
             return True
+
+        
+        if self._get_account_from_accountdb(self.imsi):
+            # Since we have the account in the db we can safely
+            # fetch the provider information from the providerdb
+            self.providerdb.get_provider(self.account.name,
+                                         self.account.code)
+        else:
+            # Account not known yet, get provider interactively
+            self.account = None
+            self._get_provider_interactive(self.imsi)
+
+        # Everything worked out, disable the timer.
+        return False
 
     def setup(self):
         logging.debug("Setting up")        
@@ -135,7 +188,7 @@ class PPMController(GObject.GObject):
             modem = modems[0] # FIXME: handle multiple modems
             logging.debug("Using modem %s" % modem)
             self.mm.set_modem(modem)
-            GObject.timeout_add(500, self.init_current_provider)
+            GObject.timeout_add(500, self.init_account_and_provider)
         else:        
             self.view.show_error("No modem found.")
             self.quit()
@@ -162,17 +215,44 @@ class PPMController(GObject.GObject):
         self.view.close_modem_response()
     
     def on_balance_info_fetched(self, balance, *args):
-        self.provider.balance = balance
-        self.emit('balance-info-fetched', self.provider.balance)
-        self.view.update_account_balance_information(self.provider.balance,
-                                                     time.asctime())
+        """Callback for succesful MM fetch balance info call"""
+        self.emit('balance-info-changed', balance)
 
     def on_balance_topped_up(self, reply):
+        """Callback for succesful MM topup balance call"""
         self.view.update_top_up_information(reply)
 
     def on_modem_error(self, e):
         self.view.show_modem_error(e.msg)
         logging.error(e.msg)
+
+    def on_provider_changed(self, obj, provider):
+        """Act on provider-changed signal"""
+        logging.debug("Provider changed to '%s'", provider.name)
+
+        self.view.update_provider_name(provider.name)
+
+        if self.imsi and not self.account:
+            # We have an imsi and the user told us what provider to use:
+            self.account = self.accountdb.add(self.imsi, provider)
+        elif self.account:
+            # Update an existing account with the user provided information
+            self.account.update_provider(provider)
+            if self.account.props.timestamp:
+                self.view.update_account_balance_information(
+                                    self.account.balance,
+                                    self.account.timestamp)
+
+    def on_balance_info_changed(self, obj, balance):
+        """Act on balance-info-changed signal"""
+        logging.debug("Balance info changed")
+        
+        timestamp = time.asctime()
+        if self.account:
+            self.account.update_balance(balance, timestamp)
+
+        self.view.update_account_balance_information(balance, timestamp)
+
     
 GObject.type_register(PPMController)
 
@@ -245,7 +325,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.controller.top_up_balance()
 
     def on_balance_info_renew_clicked(self, dummy):
-        self.controller.fetch_balance_info()
+        self.controller.fetch_balance()
 
     def on_provider_change_clicked(self, dummy):
         # FIXME: allow to select provider
@@ -398,7 +478,8 @@ class PPMProviderAssistant(PPMObject):
         else:
             # List of possible providers given, all from the same country
             self.country_code = self.possible_providers[0].country
-            self.assistant.set_forward_page_func(self._providers_only_page_func, None)
+            self.assistant.set_forward_page_func(self._providers_only_page_func,
+                                                 None)
         self.assistant.show()
 
     def close(self):

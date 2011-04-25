@@ -12,3 +12,7 @@ Makefile.in
 missing
 mkinstalldirs
 prepaid-manager-applet-*.tar.gz
+
+data/gschemas.compiled
+data/org.gnome.PrepaidManager.gschema.valid
+data/org.gnome.PrepaidManager.gschema.xml

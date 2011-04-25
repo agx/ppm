@@ -1,6 +1,6 @@
 NULL =
 
-SUBDIRS = src po
+SUBDIRS = data src po
 
 DISTCLEANFILES = \
         intltool-extract \

@@ -24,15 +24,20 @@ class ProviderError(Exception):
 
 
 class Provider(object):
-    """Keeps the information on howto top up the ballance and how to query the
-    current ballance"""
+    """
+    Keeps the information on howto interact with a certain provider, that
+    his howto top up the ballance and how to query the current ballance
+
+    It doesn't keep any current balance information or similar since this is
+    associated with an account (a user can have several SIM cards form the same
+    provider)
+    """
 
     def __init__(self, country, name):
         self.country = country
         self.name = name
         self.fetch_balance_cmds = {}
         self.top_up_cmds = {}
-        self.balance = None
         logging.debug("New provider: %s, %s", country, name)
 
     def add_fetch_balance_cmd(self, cmd):

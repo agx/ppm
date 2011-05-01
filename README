@@ -13,7 +13,7 @@ Requirements
 * ModemManager with ussd support (current git)
 * mobile-broadband-provider-info with top-up support (current git)
 * GTK+ >= 3.0.0, Debian package: libgtk+-3-0
-* PyGI >= 2.28.3, Debian package: python-gobject
+* PyGObject >= 2.28.3, Debian package: python-gobject
 * DBus Python Bindings >= 0.83, Debian package: python-dbus
 
 Project Page

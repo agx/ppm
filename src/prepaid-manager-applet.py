@@ -622,10 +622,24 @@ def setup_dbus():
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 
+def setup_schemas():
+    """If we're running from the source tree add our gsettings schema to the
+    list of schema dirs"""
+
+    schema_dir = 'data'
+    schema = os.path.join(schema_dir,
+                          "%s.gschema.xml" % AccountDB.PPM_GSETTINGS_ID)
+    if os.path.exists(schema):
+        logging.debug("Running from source tree, adding local schema dir '%s'"
+                      % schema_dir)
+        os.environ["GSETTINGS_SCHEMA_DIR"] = "data"
+
+
 def main():
     logging.basicConfig(level=logging.DEBUG,
                         format='ppm: %(levelname)s: %(message)s')
 
+    setup_schemas()
     setup_dbus()
     setup_i18n()
 

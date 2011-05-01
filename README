@@ -16,6 +16,20 @@ Requirements
 * PyGObject >= 2.28.3, Debian package: python-gobject
 * DBus Python Bindings >= 0.83, Debian package: python-dbus
 
+Build
+-----
+To build ppm use:
+
+  ./configure
+  make
+
+Running
+-------
+If you don't want to install ppm on you system you can run it from the source
+tree:
+
+   src/prepaid-manager-applet.py
+
 Project Page
 ------------
 https://honk.sigxcpu.org/piki/projects/ppm

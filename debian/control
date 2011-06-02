@@ -3,8 +3,14 @@ Section: net
 Priority: extra
 Maintainer: Guido Günther <agx@sigxcpu.org>
 Build-Depends: debhelper (>= 7.0.50~),
+ libdbus-1-dev,
+ python-dbus,
  libglib2.0-bin,
- python-gobject,
+ libglib2.0-dev,
+ python-gobject-dev,
+ libgtk-3-dev,
+ gnome-common,
+ gnome-doc-utils,
  automake,
  autoconf
 Standards-Version: 3.9.1

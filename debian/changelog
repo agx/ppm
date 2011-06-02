@@ -1,3 +1,12 @@
+prepaid-manager-applet (0.0.1.2-1) unstable; urgency=low
+
+  * New upstream version
+  * [2061e8e] Update Build-Deps for GNOME3
+  * [050e14c] Depend on the gir package instead of GTK+3 itself
+  * [9ea1467] Set prefix to /usr
+
+ -- Guido Günther <agx@sigxcpu.org>  Thu, 02 Jun 2011 15:13:52 +0200
+
 ppm (0.0.0~git20110425-1) unstable; urgency=low
 
   * Initial release

@@ -4,6 +4,7 @@ pythondir = $(pkgdatadir)/ppm/
 python_DATA_IN = __init__.py.in
 python_DATA = \
 		__init__.py	\
+		accountdb.py	\
 		modemproxy.py	\
 		provider.py	\
 		providerdb.py	\
@@ -12,7 +13,7 @@ python_DATA = \
 
 EXTRA_DIST = $(python_DATA) $(python_DATA_IN)
 
-%.py: $(srcdir)/%.py.in
+%.py: $(srcdir)/%.py.in $(srcdir)/Makefile
 	sed -e "s,::PACKAGE::,$(PACKAGE)," \
 	  -e "s,::PYLIBDIR::,$(pkgdatadir)," \
 	  -e "s,::GETTEXTDIR::,$(datadir)/locale," \

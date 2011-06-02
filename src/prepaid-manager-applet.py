@@ -27,6 +27,7 @@ from gi.repository import Gtk
 import locale
 import logging
 import os
+import sys
 import time
 
 import ppm
@@ -635,8 +636,18 @@ def setup_schemas():
         os.environ["GSETTINGS_SCHEMA_DIR"] = "data"
 
 
-def main():
-    logging.basicConfig(level=logging.DEBUG,
+def main(args):
+    parser = glib.option.OptionParser()
+    parser.add_option("--debug", "-d", action="store_true", dest="debug",
+                      help="enable debugging", default=False)
+    options, args = parser.parse_args()
+
+    if options.debug:
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.INFO
+
+    logging.basicConfig(level=log_level,
                         format='ppm: %(levelname)s: %(message)s')
 
     setup_schemas()
@@ -651,7 +662,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        main(sys.argv)
     except KeyboardInterrupt:
         logging.debug("Received KeyboardInterrupt. Exiting application.")
     except SystemExit:

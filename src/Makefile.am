@@ -10,7 +10,7 @@ desktop_DATA     = $(desktop_in_files:.desktop.in=.desktop)
 pythondir = $(pkgdatadir)
 python_DATA = $(PACKAGE).py
 
-EXTRA_DIST = $(python_DATA) $(desktop_in_files) $(ui_DATA)
+EXTRA_DIST = $(python_DATA) $(desktop_in_files) $(ui_DATA) $(bin_SCRIPTS_IN)
 
 @INTLTOOL_DESKTOP_RULE@
 

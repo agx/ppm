@@ -1,4 +1,4 @@
-Source: ppm
+Source: prepaid-manager-applet
 Section: net
 Priority: extra
 Maintainer: Guido Günther <agx@sigxcpu.org>
@@ -17,7 +17,7 @@ Standards-Version: 3.9.1
 Homepage: https://honk.sigxcpu.org/piki/projects/ppm/
 Vcs-Git: git://honk.sigxcpu.org/git/ppm.git
 
-Package: prepaid-manager
+Package: prepaid-manager-applet
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends},
  python-gobject,
@@ -25,8 +25,8 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  python-dbus,
  mobile-broadband-provider-info (>= 20110424-1),
  modemmanager (>= 0.4+git.20110124t203624.00b6cce),
-Description: Prepaid Manager Applet
- prepaid-manager-applet aims to ease the handling of mobile internet
+Description: GNOME Prepaid Manager
+ GNOME prepaid manager aims to ease the handling of mobile internet
  connections using GSM mobile prepaid cards on the GNOME Desktop. Such a SIM
  card can either be in a mobile phone used as a modem, a usb 3g module (usb
  surf stick) or used by the built in 3G chipset in your laptop/netbook.

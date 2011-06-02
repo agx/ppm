@@ -4,6 +4,7 @@ pythondir = $(pkgdatadir)/ppm/
 python_DATA_IN = __init__.py.in
 python_DATA = \
 		__init__.py	\
+		accountdb.py	\
 		modemproxy.py	\
 		provider.py	\
 		providerdb.py	\

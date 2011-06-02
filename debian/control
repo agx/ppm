@@ -21,7 +21,7 @@ Package: prepaid-manager
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends},
  python-gobject,
- libgtk+-3-0,
+ gir1.2-gtk-3.0,
  python-dbus,
  mobile-broadband-provider-info (>= 20110424-1),
  modemmanager (>= 0.4+git.20110124t203624.00b6cce),

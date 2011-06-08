@@ -3,3 +3,4 @@
 gettext_app = '::PACKAGE::'
 gettext_dir = '::GETTEXTDIR::'
 ui_dir      = '::PKGDATADIR::'
+version     = '::VERSION::'

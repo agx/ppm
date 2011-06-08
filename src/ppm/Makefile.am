@@ -15,6 +15,7 @@ EXTRA_DIST = $(python_DATA) $(python_DATA_IN)
 
 %.py: $(srcdir)/%.py.in $(srcdir)/Makefile
 	sed -e "s,::PACKAGE::,$(PACKAGE)," \
+	  -e "s,::VERSION::,$(PACKAGE_VERSION)," \
 	  -e "s,::PYLIBDIR::,$(pkgdatadir)," \
 	  -e "s,::GETTEXTDIR::,$(datadir)/locale," \
 	  -e "s,::DATADIR::,$(datadir)," \

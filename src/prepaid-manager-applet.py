@@ -284,10 +284,22 @@ class PPMObject(object):
 # View
 class PPMDialog(GObject.GObject, PPMObject):
     
+    def _init_about_dialog(self):
+        self.about_dialog = Gtk.AboutDialog(
+                                authors = ["Guido Günther <agx@sigxcpu.org>"],
+                                program_name = "GNOME Prepaid Manager",
+                                website = "https://honk.sigxcpu.org/piki/projects/ppm/",
+                                website_label = _("Website"),
+                                comments = _("Manage balance of prepaid GSM SIM cards"),
+                                wrap_license = True,
+                                version = ppm.version,
+                                license_type = Gtk.License.GPL_3_0)
+
     def _init_subdialogs(self):
         self.provider_info_missing_dialog = PPMProviderInfoMissingDialog(self)
         self.provider_assistant = PPMProviderAssistant(self)
         self.modem_response = PPMModemResponse(self)
+        self._init_about_dialog()
 
     def _setup_ui(self):
         self.dialog = self.builder.get_object("ppm_dialog")
@@ -324,6 +336,10 @@ class PPMDialog(GObject.GObject, PPMObject):
     def on_balance_top_up_clicked(self, dummy):
         self.clear_top_up_information()
         self.controller.top_up_balance()
+
+    def on_about_activated(self, dummy):
+        self.about_dialog.run()
+        self.about_dialog.hide()
 
     def on_balance_info_renew_clicked(self, dummy):
         self.controller.fetch_balance()

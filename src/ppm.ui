@@ -3,6 +3,7 @@
   <requires lib="gtk+" version="2.16"/>
   <object class="GtkWindow" id="ppm_dialog">
     <property name="can_focus">False</property>
+    <signal name="delete-event" handler="on_delete" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>

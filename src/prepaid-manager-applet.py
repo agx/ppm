@@ -332,6 +332,10 @@ class PPMDialog(GObject.GObject, PPMObject):
     def on_close_clicked(self, dummy):
         self.controller.quit()
 
+    def on_delete(self, event, dummy):
+        self.controller.quit()
+        return False
+
     def on_balance_top_up_clicked(self, dummy):
         self.clear_top_up_information()
         self.controller.top_up_balance()

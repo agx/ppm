@@ -287,7 +287,6 @@ class PPMDialog(GObject.GObject, PPMObject):
     def _init_about_dialog(self):
         self.about_dialog = Gtk.AboutDialog(
                                 authors = ["Guido Günther <agx@sigxcpu.org>"],
-                                program_name = "GNOME Prepaid Manager",
                                 website = "https://honk.sigxcpu.org/piki/projects/ppm/",
                                 website_label = _("Website"),
                                 comments = _("Manage balance of prepaid GSM SIM cards"),
@@ -670,6 +669,7 @@ def main(args):
     setup_dbus()
     setup_i18n()
 
+    glib.set_application_name(_("Prepaid Manager"))
     controller = PPMController()
     main_dialog = PPMDialog(controller)
     GObject.timeout_add(1, controller.setup)

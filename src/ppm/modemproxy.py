@@ -49,9 +49,10 @@ class ModemManagerProxy(GObject.GObject):
     MM_DBUS_TIMEOUT = 5000
     
     __gsignals__ = {
-        # Emitted when we got the new account balance from the provider
+        # Emitted when a request to MM starts
         'request-started':  (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
+        # Emitted when a request has finished
         'request-finished': (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
         }

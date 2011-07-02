@@ -5,3 +5,4 @@ Exec=prepaid-manager-applet
 Terminal=false
 Type=Application
 Categories=GNOME;GTK;Utility;Network;
+Icon=ppm

@@ -292,6 +292,7 @@ class PPMDialog(GObject.GObject, PPMObject):
                                 comments = _("Manage balance of prepaid GSM SIM cards"),
                                 wrap_license = True,
                                 version = ppm.version,
+                                logo_icon_name = 'ppm',
                                 license_type = Gtk.License.GPL_3_0)
 
     def _init_subdialogs(self):

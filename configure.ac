@@ -29,6 +29,12 @@ GNOME_DOC_INIT
 AC_CONFIG_FILES([
 Makefile
 data/Makefile
+data/icons/Makefile
+data/icons/scalable/Makefile
+data/icons/128x128/Makefile
+data/icons/64x64/Makefile
+data/icons/48x48/Makefile
+data/icons/32x32/Makefile
 po/Makefile.in
 src/Makefile
 src/ppm/Makefile

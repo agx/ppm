@@ -24,6 +24,7 @@ import gettext
 from gi.repository import GObject
 import glib
 from gi.repository import Gtk
+from gi.repository import Gdk
 import locale
 import logging
 import os
@@ -656,6 +657,13 @@ def setup_schemas():
         os.environ["GSETTINGS_SCHEMA_DIR"] = "data"
 
 
+def setup_prgname():
+    """Set the prgname since gnome-shell is application based"""
+    glib.set_prgname(ppm.prgname)
+    Gdk.set_program_class(ppm.prgname)
+    glib.set_application_name(_("Prepaid Manager"))
+
+
 def main(args):
     parser = glib.option.OptionParser()
     parser.add_option("--debug", "-d", action="store_true", dest="debug",
@@ -670,11 +678,11 @@ def main(args):
     logging.basicConfig(level=log_level,
                         format='ppm: %(levelname)s: %(message)s')
 
+    setup_i18n()
+    setup_prgname()
     setup_schemas()
     setup_dbus()
-    setup_i18n()
 
-    glib.set_application_name(_("Prepaid Manager"))
     controller = PPMController()
     main_dialog = PPMDialog(controller)
     GObject.timeout_add(1, controller.setup)

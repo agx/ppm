@@ -18,8 +18,6 @@
 #
 
 
-import dbus
-import dbus.mainloop.glib
 import gettext
 from gi.repository import GObject
 import glib
@@ -216,12 +214,14 @@ class PPMController(GObject.GObject):
         logging.debug("Finished modem request")
         self.view.close_modem_response()
     
-    def on_balance_info_fetched(self, balance, *args):
+    def on_balance_info_fetched(self, var, user_data):
         """Callback for succesful MM fetch balance info call"""
+        balance = var.unpack()[0]
         self.emit('balance-info-changed', balance)
 
-    def on_balance_topped_up(self, reply):
+    def on_balance_topped_up(self, var, user_data):
         """Callback for succesful MM topup balance call"""
+        reply = var.unpack()[0]
         self.view.update_top_up_information(reply)
 
     def on_modem_error(self, e):
@@ -640,10 +640,6 @@ def setup_i18n():
     logging.debug('Using locale: %s', locale.getlocale())
 
 
-def setup_dbus():
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-
-
 def setup_schemas():
     """If we're running from the source tree add our gsettings schema to the
     list of schema dirs"""
@@ -681,7 +677,6 @@ def main(args):
     setup_i18n()
     setup_prgname()
     setup_schemas()
-    setup_dbus()
 
     controller = PPMController()
     main_dialog = PPMDialog(controller)

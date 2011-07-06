@@ -10,12 +10,10 @@ IT_PROG_INTLTOOL([0.35.0])
 GLIB_REQUIRED=2.25.6
 GTK_REQUIRED=3.0.0
 PYGOBJECT_REQUIRED=2.28.3
-DBUS_PYTHON_REQUIRED=0.83
 
 PKG_CHECK_MODULES(PPM, [glib-2.0 >= $GLIB_REQUIRED
                         gtk+-3.0 >= $GTK_REQUIRED
-                        pygobject-2.0 >= $PYGOBJECT_REQUIRED
-                        dbus-python >= $DBUS_PYTHON_REQUIRED])
+                        pygobject-2.0 >= $PYGOBJECT_REQUIRED])
 
 GETTEXT_PACKAGE=prepaid-manager-applet
 AC_SUBST(GETTEXT_PACKAGE)

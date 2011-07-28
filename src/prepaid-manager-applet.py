@@ -389,7 +389,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         dialog = Gtk.MessageDialog(parent=self.dialog,
                                    flags=Gtk.DialogFlags.MODAL |
                                          Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                   type=Gtk.MessageType.ERROR,
+                                   message_type=Gtk.MessageType.ERROR,
                                    buttons=Gtk.ButtonsType.OK)
         dialog.set_markup("Modem error: %s" % msg)
         dialog.run()
@@ -400,7 +400,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         dialog = Gtk.MessageDialog(parent=self.dialog,
                                    flags=Gtk.DialogFlags.MODAL |
                                          Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                   type=Gtk.MessageType.QUESTION,
+                                   message_type=Gtk.MessageType.QUESTION,
                                    buttons=Gtk.ButtonsType.YES_NO)
         dialog.set_markup(_("Enable Modem?"))
         ret = dialog.run()
@@ -416,7 +416,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         error = Gtk.MessageDialog(parent=self.dialog,
                                   flags=Gtk.DialogFlags.MODAL |
                                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                  type=Gtk.MessageType.ERROR,
+                                  message_type=Gtk.MessageType.ERROR,
                                   buttons=Gtk.ButtonsType.OK)
         error.set_markup(msg)
         error.run()
@@ -571,7 +571,7 @@ class PPMProviderInfoMissingDialog(object):
         self.dialog = Gtk.MessageDialog(parent=main_dialog.dialog,
                                         flags=Gtk.DialogFlags.MODAL |
                                               Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                        type=Gtk.MessageType.INFO,
+                                        message_type=Gtk.MessageType.INFO,
                                         buttons=Gtk.ButtonsType.OK)
         self.messages = {
             'balance_info_missing':

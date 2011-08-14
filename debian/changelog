@@ -1,3 +1,10 @@
+prepaid-manager-applet (0.0.2-1) unstable; urgency=low
+
+  * New upstream release 0.0.2
+  * [69da249] Add upstream version pattern
+
+ -- Guido Günther <agx@sigxcpu.org>  Sun, 14 Aug 2011 15:02:20 +0200
+
 prepaid-manager-applet (0.0.1.2-1) unstable; urgency=low
 
   * New upstream version

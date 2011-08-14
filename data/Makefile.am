@@ -1,5 +1,7 @@
 NULL = 
 
+SUBDIRS = icons
+
 gsettings_SCHEMAS = org.gnome.PrepaidManager.gschema.xml
 
 @INTLTOOL_XML_NOMERGE_RULE@

@@ -18,12 +18,11 @@
 #
 
 
-import dbus
-import dbus.mainloop.glib
 import gettext
 from gi.repository import GObject
 import glib
 from gi.repository import Gtk
+from gi.repository import Gdk
 import locale
 import logging
 import os
@@ -164,10 +163,15 @@ class PPMController(GObject.GObject):
                 self.mm.modem_enable(reply_func=self.init_account_and_provider)
             return True
 
-        
-        if self._get_account_from_accountdb(self.imsi):
-            # Since we have the account in the db we can safely
-            # fetch the provider information from the providerdb
+        try:
+            account = self._get_account_from_accountdb(self.imsi)
+        except:
+            # Fetching account from the DB failed, so start over
+            account = None
+
+        if account:
+            # Since we have the account in the db we can safely fetch the
+            # provider information from the providerdb
             self.providerdb.get_provider(self.account.name,
                                          self.account.code)
         else:
@@ -215,12 +219,14 @@ class PPMController(GObject.GObject):
         logging.debug("Finished modem request")
         self.view.close_modem_response()
     
-    def on_balance_info_fetched(self, balance, *args):
+    def on_balance_info_fetched(self, var, user_data):
         """Callback for succesful MM fetch balance info call"""
+        balance = var.unpack()[0]
         self.emit('balance-info-changed', balance)
 
-    def on_balance_topped_up(self, reply):
+    def on_balance_topped_up(self, var, user_data):
         """Callback for succesful MM topup balance call"""
+        reply = var.unpack()[0]
         self.view.update_top_up_information(reply)
 
     def on_modem_error(self, e):
@@ -284,10 +290,22 @@ class PPMObject(object):
 # View
 class PPMDialog(GObject.GObject, PPMObject):
     
+    def _init_about_dialog(self):
+        self.about_dialog = Gtk.AboutDialog(
+                                authors = ["Guido Günther <agx@sigxcpu.org>"],
+                                website = "https://honk.sigxcpu.org/piki/projects/ppm/",
+                                website_label = _("Website"),
+                                comments = _("Manage balance of prepaid GSM SIM cards"),
+                                wrap_license = True,
+                                version = ppm.version,
+                                logo_icon_name = 'ppm',
+                                license_type = Gtk.License.GPL_3_0)
+
     def _init_subdialogs(self):
         self.provider_info_missing_dialog = PPMProviderInfoMissingDialog(self)
         self.provider_assistant = PPMProviderAssistant(self)
         self.modem_response = PPMModemResponse(self)
+        self._init_about_dialog()
 
     def _setup_ui(self):
         self.dialog = self.builder.get_object("ppm_dialog")
@@ -321,9 +339,17 @@ class PPMDialog(GObject.GObject, PPMObject):
     def on_close_clicked(self, dummy):
         self.controller.quit()
 
+    def on_delete(self, event, dummy):
+        self.controller.quit()
+        return False
+
     def on_balance_top_up_clicked(self, dummy):
         self.clear_top_up_information()
         self.controller.top_up_balance()
+
+    def on_about_activated(self, dummy):
+        self.about_dialog.run()
+        self.about_dialog.hide()
 
     def on_balance_info_renew_clicked(self, dummy):
         self.controller.fetch_balance()
@@ -368,7 +394,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         dialog = Gtk.MessageDialog(parent=self.dialog,
                                    flags=Gtk.DialogFlags.MODAL |
                                          Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                   type=Gtk.MessageType.ERROR,
+                                   message_type=Gtk.MessageType.ERROR,
                                    buttons=Gtk.ButtonsType.OK)
         dialog.set_markup("Modem error: %s" % msg)
         dialog.run()
@@ -379,7 +405,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         dialog = Gtk.MessageDialog(parent=self.dialog,
                                    flags=Gtk.DialogFlags.MODAL |
                                          Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                   type=Gtk.MessageType.QUESTION,
+                                   message_type=Gtk.MessageType.QUESTION,
                                    buttons=Gtk.ButtonsType.YES_NO)
         dialog.set_markup(_("Enable Modem?"))
         ret = dialog.run()
@@ -395,7 +421,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         error = Gtk.MessageDialog(parent=self.dialog,
                                   flags=Gtk.DialogFlags.MODAL |
                                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                  type=Gtk.MessageType.ERROR,
+                                  message_type=Gtk.MessageType.ERROR,
                                   buttons=Gtk.ButtonsType.OK)
         error.set_markup(msg)
         error.run()
@@ -550,7 +576,7 @@ class PPMProviderInfoMissingDialog(object):
         self.dialog = Gtk.MessageDialog(parent=main_dialog.dialog,
                                         flags=Gtk.DialogFlags.MODAL |
                                               Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                        type=Gtk.MessageType.INFO,
+                                        message_type=Gtk.MessageType.INFO,
                                         buttons=Gtk.ButtonsType.OK)
         self.messages = {
             'balance_info_missing':
@@ -619,10 +645,6 @@ def setup_i18n():
     logging.debug('Using locale: %s', locale.getlocale())
 
 
-def setup_dbus():
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-
-
 def setup_schemas():
     """If we're running from the source tree add our gsettings schema to the
     list of schema dirs"""
@@ -634,6 +656,13 @@ def setup_schemas():
         logging.debug("Running from source tree, adding local schema dir '%s'"
                       % schema_dir)
         os.environ["GSETTINGS_SCHEMA_DIR"] = "data"
+
+
+def setup_prgname():
+    """Set the prgname since gnome-shell is application based"""
+    glib.set_prgname(ppm.prgname)
+    Gdk.set_program_class(ppm.prgname)
+    glib.set_application_name(_("Prepaid Manager"))
 
 
 def main(args):
@@ -650,9 +679,9 @@ def main(args):
     logging.basicConfig(level=log_level,
                         format='ppm: %(levelname)s: %(message)s')
 
-    setup_schemas()
-    setup_dbus()
     setup_i18n()
+    setup_prgname()
+    setup_schemas()
 
     controller = PPMController()
     main_dialog = PPMDialog(controller)

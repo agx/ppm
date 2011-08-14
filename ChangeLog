@@ -1,0 +1,190 @@
+commit 65744bc63c0230a8bfcf39b4723ac1ff68d89f10
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun Aug 14 14:06:59 2011 +0200
+
+    Bump version to 0.0.2
+
+commit 2fb84acfa4cd7544be829a35b9d4539c870d6c82
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun Aug 14 14:00:01 2011 +0200
+
+    Catch exception if getting the provider information fails
+    
+    This can happen if the provider disappears from the
+    mobile-broadband-provider-info db.
+
+commit 79efa1221be5b77e6e85b19645b602a63ee12860
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Thu Jul 28 12:17:49 2011 +0200
+
+    Use message_type instead of type
+    
+    as Gtk.MessageDialog parameter
+
+commit 337321839f63d7c4d96407b21b9a5430f6a0bbd8
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Thu Jul 7 00:14:22 2011 +0200
+
+    Use GDBus
+
+commit 407c322971dc68ff4f75038c7fe4b8c47451aaa3
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Tue Jul 5 08:59:57 2011 +0200
+
+    Set correct prgname
+    
+    so gnome-shell finds the desktop file:
+    
+    http://live.gnome.org/GnomeShell/ApplicationBased
+
+commit 2df5d870e2b560f63da123f586fc5e5456d42906
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sat Jul 2 16:11:08 2011 +0200
+
+    Add application icon
+
+commit c44bb1e2193bcbe09bbdb446994301ee01624b18
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Thu Jun 9 18:44:37 2011 +0200
+
+    Wire up delete-event
+
+commit e94c7ed0d9fa70e6ec13638e3e362d8fda167c5b
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Thu Jun 9 18:32:52 2011 +0200
+
+    Set application name
+
+commit 1d6e7fb4c6167904e260798ab39bee255f677dec
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Wed Jun 8 21:47:00 2011 +0200
+
+    Add an about dialog
+
+commit 5f47e032fe2b2e8f69fe623e0e25b8e45bb3950a
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Wed Jun 8 19:21:54 2011 +0200
+
+    Use main window with menu instead of dialog
+
+commit 73d2254c229eb9792bcc68a52f4d2750bc074b94
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Wed Jun 8 17:55:47 2011 +0200
+
+    Add Category and enhance Comment
+
+commit d74980da91745c15e643bd576783a0263275f240
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Thu Jun 2 15:18:05 2011 +0200
+
+    Release 0.0.1.2
+
+commit 274ed2ecbf4e1b9d1eca0c6b049e33e78b112905
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Thu Jun 2 15:08:46 2011 +0200
+
+    src/ppm/Makefile.am: genereate __init__.py when Makefile changes
+    
+    so we catch updates of ./configure arguments. Otherwise __init__.py
+    might have old content.
+
+commit 5f4b48dbfb2d7863f34d83372a636806f6d13c21
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Thu Jun 2 13:51:59 2011 +0200
+
+    autogen.sh was missing from EXTRA_DIST
+
+commit 703a329daae04fc5ab3a01b407a745003f0817b6
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Thu Jun 2 13:50:43 2011 +0200
+
+    accounts.db was missing from python_DATA
+
+commit 24714b354d46226c7c195eca8cc97a297b0e363d
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Wed May 25 21:35:14 2011 +0200
+
+    Release 0.0.1.1
+
+commit 10e21899cc0eb81731f15b8ae9fd97d9a2613741
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Wed May 25 21:32:40 2011 +0200
+
+    Ship prepaid-manager-applet.in
+    
+    Reported by: Ankur Sinha
+
+commit 87690f367da41e30942152f53c131ba9a6763a34
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun May 1 22:35:38 2011 +0200
+
+    Releae 0.0.1
+
+commit add935ff05e960de47ee8ecccbdc1e48cdd0219d
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun May 1 22:35:15 2011 +0200
+
+    Add option parser
+    
+    se we can enable debugging by default
+
+commit a2a2aac10c248cc3a7467ca4bbe51bcc5478fdd0
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun May 1 14:22:57 2011 +0200
+
+    Set GSETTINGS_SCHEMA_DIR if running from source tree
+
+commit deda673382bddb0e56429c9e4c9cc645ae37b93b
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun May 1 14:20:10 2011 +0200
+
+    Add basic build and run instructions
+
+commit 4b4c334827a8639c246bcbc717288a133d55b754
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun May 1 13:46:09 2011 +0200
+
+    Check for dependencies
+
+commit 8981216d64d501530549836c49fc2844466f9de6
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Mon Apr 25 17:41:28 2011 +0200
+
+    Store known providers and balance in gsettings
+    
+    based on the IMSI of the SIM card
+
+commit 26c0560f6c4a5869859f7daf7e41f73d739e49cd
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun Apr 17 18:19:50 2011 +0200
+
+    Website is GNOME Wiki
+
+commit 02f90e8f7dc5707e91a74dabefd661e529a89499
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sun Apr 17 18:17:02 2011 +0200
+
+    Handle providerdb parsing errors
+
+commit a6a74fd8d9e55d6827cfd8534cc1c6ad7fc2ee83
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Sat Apr 16 18:00:07 2011 +0200
+
+    Use PyGI instead of pygtk
+    
+    and switch to GTK+3
+
+commit 0e24147fb4a1f78e40048437301b0795b08eef49
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Fri Dec 24 19:43:31 2010 +0100
+
+    Line wrap USSD replies
+    
+    Some provides such as Tchibo Mobil return messages way over 100
+    characters. Make sure we linewrap those.
+
+commit f3bcc5ed66c808ccc15417daf5f3ad25c76ad648
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Mon Oct 25 20:10:42 2010 +0200
+
+    Initial commit

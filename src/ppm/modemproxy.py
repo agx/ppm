@@ -16,10 +16,10 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-import dbus
-import dbus.glib
-import dbus.service
+import glib
 from gi.repository import GObject
+from gi.repository import GLib
+from gi.repository import Gio
 
 
 class ModemError(Exception):
@@ -58,7 +58,7 @@ class ModemManagerProxy(GObject.GObject):
 
     def __init__(self):
         self.__gobject_init__()
-        self.bus = dbus.SystemBus()
+        self.bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         self.request = None
         self.reply_func = None
         self.error_func = None
@@ -67,7 +67,6 @@ class ModemManagerProxy(GObject.GObject):
 
     def set_modem(self, modem):
         self.modem = modem
-        self.obj = self.bus.get_object(self.MM_DBUS_SERVICE, self.modem)
 
     def mm_request(func):
         def wrapped_f( self, *args, **kw) :
@@ -77,8 +76,7 @@ class ModemManagerProxy(GObject.GObject):
             if kw.has_key('error_func'):
                 self.error_func = kw['error_func']
             self.emit('request-started', self)
-            ret = func(self, *args, **kw)
-            return ret
+            func(self, *args, **kw)
         wrapped_f.__name__= func.__name__
         wrapped_f.__doc__= func.__doc__
         return wrapped_f
@@ -102,33 +100,41 @@ class ModemManagerProxy(GObject.GObject):
             return False
 
     @mm_request_done
-    def handle_dbus_reply(self, *args):
-        if self.reply_func:
-            self.reply_func(*args)
-
-    @mm_request_done
-    def handle_dbus_error(self, e):
-        if self.error_func:
-            me = ModemError("%s failed: %s" % (self.request, e))
-            self.error_func(me)
+    def handle_dbus_reply(self, obj, result, user_data):
+        try:
+            res = obj.call_finish(result)
+            if self.reply_func:
+                self.reply_func(res, user_data)
+        except glib.GError as err:
+            if self.error_func:
+                me = ModemError("%s failed: %s" % (self.request, err))
+                self.error_func(me)
     
     def get_modems(self):
-        modems = []        
-        proxy = self.bus.get_object(self.MM_DBUS_SERVICE,
-                                    self.MM_DBUS_OBJECT_MODEM_MANAGER)
-        mm = dbus.Interface(proxy,
-                            dbus_interface=self.MM_DBUS_INTERFACE_MODEM_MANAGER)
+        modems = []
+        mm = Gio.DBusProxy.new_sync(self.bus,
+                                    Gio.DBusProxyFlags.NONE,
+                                    None,
+                                    self.MM_DBUS_SERVICE,
+                                    self.MM_DBUS_OBJECT_MODEM_MANAGER,
+                                    self.MM_DBUS_INTERFACE_MODEM_MANAGER,
+                                    None)
         ret = mm.EnumerateDevices()
         for modem in ret:
             modems.append(modem)
         return modems
 
     def get_imsi(self):
-        card = dbus.Interface(self.obj,
-                        dbus_interface=self.MM_DBUS_INTERFACE_MODEM_GSM_CARD)
+        card = Gio.DBusProxy.new_sync(self.bus,
+                                    Gio.DBusProxyFlags.NONE,
+                                    None,
+                                    self.MM_DBUS_SERVICE,
+                                    self.modem,
+                                    self.MM_DBUS_INTERFACE_MODEM_GSM_CARD,
+                                    None)
         try:
             return card.GetImsi()
-        except dbus.exceptions.DBusException as msg:
+        except glib.GError as msg:
             raise ModemError("Getting IMSI failed: %s" % msg)
 
     def get_network_id(self):
@@ -139,20 +145,30 @@ class ModemManagerProxy(GObject.GObject):
 
     @mm_request
     def ussd_initiate(self, command, reply_func=None, error_func=None):
-        ussd = dbus.Interface(self.obj,
-                        dbus_interface=self.MM_DBUS_INTERFACE_MODEM_GSM_USSD)
-        return ussd.Initiate(command,
-                             reply_handler=self.handle_dbus_reply,
-                             error_handler=self.handle_dbus_error)
+        ussd = Gio.DBusProxy.new_sync(self.bus,
+                                      Gio.DBusProxyFlags.NONE,
+                                      None,
+                                      self.MM_DBUS_SERVICE,
+                                      self.modem,
+                                      self.MM_DBUS_INTERFACE_MODEM_GSM_USSD,
+                                      None)
+        ussd.call("Initiate", GLib.Variant('(s)', (command,)),
+                  Gio.DBusCallFlags.NO_AUTO_START, 5000, None,
+                  self.handle_dbus_reply, None)
 
     @mm_request
     def _modem__enable(self, enable, reply_func=None, error_func=None):
-        ussd = dbus.Interface(self.obj,
-                        dbus_interface=self.MM_DBUS_INTERFACE_MODEM)
-        ussd.Enable(enable,
-                    reply_handler=self.handle_dbus_reply,
-                    error_handler=self.handle_dbus_error)
-        
+        ussd = Gio.DBusProxy.new_sync(self.bus,
+                                      Gio.DBusProxyFlags.NONE,
+                                      None,
+                                      self.MM_DBUS_SERVICE,
+                                      self.modem,
+                                      self.MM_DBUS_INTERFACE_MODEM,
+                                      None)
+        ussd.call("Enable", GLib.Variant('(b)', (enable,)),
+                  Gio.DBusCallFlags.NO_AUTO_START, 1000, None,
+                  self.handle_dbus_reply, None)
+
     def modem_enable(self, reply_func=None, error_func=None):
         self._modem__enable(True)
 

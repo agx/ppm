@@ -2,4 +2,3 @@
 * Collect balance statistics in sqlitedb
 * Handle multiple modems
 * Add support for SMS top-up messages as used by some providers
-* Drop dbus.glib and use Gio.DBusProxy instead

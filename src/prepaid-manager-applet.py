@@ -163,10 +163,15 @@ class PPMController(GObject.GObject):
                 self.mm.modem_enable(reply_func=self.init_account_and_provider)
             return True
 
-        
-        if self._get_account_from_accountdb(self.imsi):
-            # Since we have the account in the db we can safely
-            # fetch the provider information from the providerdb
+        try:
+            account = self._get_account_from_accountdb(self.imsi)
+        except:
+            # Fetching account from the DB failed, so start over
+            account = None
+
+        if account:
+            # Since we have the account in the db we can safely fetch the
+            # provider information from the providerdb
             self.providerdb.get_provider(self.account.name,
                                          self.account.code)
         else:

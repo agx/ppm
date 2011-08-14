@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 
 AC_PREREQ([2.67])
-AC_INIT([prepaid-manager-applet], [0.0.1.2],
+AC_INIT([prepaid-manager-applet], [0.0.2],
         [http://honk.sigxcpu.org/projects/prepaid-manager.py])
 AM_INIT_AUTOMAKE([-Wno-portability])
 

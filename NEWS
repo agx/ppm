@@ -1,0 +1,7 @@
+=============
+Version 0.0.2
+=============
+* Use GDBus instead of dbus-glib
+* Add icon
+* Use main window with menu bar instead of dialog
+* Don't fail when provider disappears from m-b-p-i

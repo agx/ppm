@@ -47,6 +47,7 @@ class ModemManagerProxy(GObject.GObject):
     MM_DBUS_INTERFACE_MODEM='org.freedesktop.ModemManager.Modem'
     MM_DBUS_INTERFACE_MODEM_GSM_CARD='org.freedesktop.ModemManager.Modem.Gsm.Card'
     MM_DBUS_INTERFACE_MODEM_GSM_USSD='org.freedesktop.ModemManager.Modem.Gsm.Ussd'
+    MM_DBUS_TIMEOUT = 5000
     
     __gsignals__ = {
         # Emitted when we got the new account balance from the provider
@@ -153,7 +154,7 @@ class ModemManagerProxy(GObject.GObject):
                                       self.MM_DBUS_INTERFACE_MODEM_GSM_USSD,
                                       None)
         ussd.call("Initiate", GLib.Variant('(s)', (command,)),
-                  Gio.DBusCallFlags.NO_AUTO_START, 5000, None,
+                  Gio.DBusCallFlags.NO_AUTO_START, self.MM_DBUS_TIMEOUT, None,
                   self.handle_dbus_reply, None)
 
     @mm_request
@@ -166,7 +167,7 @@ class ModemManagerProxy(GObject.GObject):
                                       self.MM_DBUS_INTERFACE_MODEM,
                                       None)
         ussd.call("Enable", GLib.Variant('(b)', (enable,)),
-                  Gio.DBusCallFlags.NO_AUTO_START, 1000, None,
+                  Gio.DBusCallFlags.NO_AUTO_START, self.MM_DBUS_TIMEOUT, None,
                   self.handle_dbus_reply, None)
 
     def modem_enable(self, reply_func=None, error_func=None):

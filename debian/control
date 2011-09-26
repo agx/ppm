@@ -25,6 +25,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  python-dbus,
  mobile-broadband-provider-info (>= 20110424-1),
  modemmanager (>= 0.4+git.20110124t203624.00b6cce),
+ python-lxml
 Description: GNOME Prepaid Manager
  GNOME prepaid manager aims to ease the handling of mobile internet
  connections using GSM mobile prepaid cards on the GNOME Desktop. Such a SIM

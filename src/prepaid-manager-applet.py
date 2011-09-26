@@ -20,7 +20,7 @@
 
 import gettext
 from gi.repository import GObject
-import glib
+from gi.repository import GLib
 from gi.repository import Gtk
 from gi.repository import Gdk
 import locale
@@ -60,7 +60,7 @@ class PPMController(GObject.GObject):
         self.mm.connect('request-finished', self.on_mm_request_finished)
 
     def __init__(self):
-        self.__gobject_init__()
+        GObject.GObject.__init__(self)
         self.mm = None
         self.imsi = None
         self.provider = None
@@ -320,7 +320,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         self._init_subdialogs()
 
     def __init__(self, controller):
-        self.__gobject_init__()
+        GObject.GObject.__init__(self)
         PPMObject.__init__(self, None, "ppm")
         self.controller = controller
         # Register ourself to the controller
@@ -622,7 +622,7 @@ class PPMModemResponse(PPMObject):
         
     def show(self):
         self.timer = GObject.timeout_add(50, self.do_progress,
-                                         priority=glib.PRIORITY_HIGH)
+                                         priority=GLib.PRIORITY_HIGH)
         self.dialog.show()
 
     def close(self):
@@ -660,13 +660,13 @@ def setup_schemas():
 
 def setup_prgname():
     """Set the prgname since gnome-shell is application based"""
-    glib.set_prgname(ppm.prgname)
+    GLib.set_prgname(ppm.prgname)
     Gdk.set_program_class(ppm.prgname)
-    glib.set_application_name(_("Prepaid Manager"))
+    GLib.set_application_name(_("Prepaid Manager"))
 
 
 def main(args):
-    parser = glib.option.OptionParser()
+    parser = GLib.option.OptionParser()
     parser.add_option("--debug", "-d", action="store_true", dest="debug",
                       help="enable debugging", default=False)
     options, args = parser.parse_args()

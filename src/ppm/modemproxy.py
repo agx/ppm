@@ -16,7 +16,6 @@
 #    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-import glib
 from gi.repository import GObject
 from gi.repository import GLib
 from gi.repository import Gio
@@ -58,7 +57,7 @@ class ModemManagerProxy(GObject.GObject):
         }
 
     def __init__(self):
-        self.__gobject_init__()
+        GObject.GObject.__init__(self)
         self.bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         self.request = None
         self.reply_func = None
@@ -106,7 +105,7 @@ class ModemManagerProxy(GObject.GObject):
             res = obj.call_finish(result)
             if self.reply_func:
                 self.reply_func(res, user_data)
-        except glib.GError as err:
+        except Exception as err:
             if self.error_func:
                 me = ModemError("%s failed: %s" % (self.request, err))
                 self.error_func(me)
@@ -135,7 +134,7 @@ class ModemManagerProxy(GObject.GObject):
                                     None)
         try:
             return card.GetImsi()
-        except glib.GError as msg:
+        except Exception as msg:
             raise ModemError("Getting IMSI failed: %s" % msg)
 
     def get_network_id(self):

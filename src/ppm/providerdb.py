@@ -94,7 +94,7 @@ class ProviderDB(object):
                 if t.tag == 'sms':
                     number = t.text
                     text = t.attrib['text']
-                    provicer.add_top_up_cmd({'sms': (number, text)})
+                    provider.add_top_up_cmd({'sms': (number, text)})
                     
     def get_providers(self, mcc, mnc):
         """

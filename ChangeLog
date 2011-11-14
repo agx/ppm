@@ -1,4 +1,40 @@
-commit 65744bc63c0230a8bfcf39b4723ac1ff68d89f10
+commit b20c91e1d1f75150c2e6e028dfd0eda75791a4a1
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Mon Nov 14 18:36:31 2011 +0100
+
+    Bump version to 0.0.2.1
+
+commit 855afa8a30645ce4cfff762fc502f951e786d219
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Mon Nov 14 18:34:30 2011 +0100
+
+    Fix URL
+
+commit 97803a61a75ef00147e26befffd22889ac19f16d
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Mon Sep 26 10:04:36 2011 +0200
+
+    Require PyGObject 3.0
+
+commit 8413459fc915b83e9974d0ff7cb12c12c10df091
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Mon Sep 26 10:04:36 2011 +0200
+
+    Adjust to GObject 3.0
+
+commit e9f6c6d60fd007643fab72cde5aacf851e34404f
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Mon Sep 26 19:18:07 2011 +0200
+
+    Fix typo
+
+commit 8b35c7402bbe003e9da37773d3ef5ceb06e8ae04
+Author: Guido Günther <agx@sigxcpu.org>
+Date:   Fri Aug 19 08:56:54 2011 +0200
+
+    Use a consistent timeout for MM DBus calls
+
+commit 04ae3ade85928efd5513e138a7cedcaaeb675e4c
 Author: Guido Günther <agx@sigxcpu.org>
 Date:   Sun Aug 14 14:06:59 2011 +0200
 

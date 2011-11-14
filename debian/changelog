@@ -1,3 +1,10 @@
+prepaid-manager-applet (0.0.2.1-1) unstable; urgency=low
+
+  * New upstream version
+  * [55a3f54] Add python-lxml dependency. Thanks to Graham Inggs
+
+ -- Guido Günther <agx@sigxcpu.org>  Mon, 14 Nov 2011 18:41:45 +0100
+
 prepaid-manager-applet (0.0.2-1) unstable; urgency=low
 
   * New upstream release 0.0.2

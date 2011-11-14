@@ -2,7 +2,7 @@
 
 AC_PREREQ([2.67])
 AC_INIT([prepaid-manager-applet], [0.0.2],
-        [http://honk.sigxcpu.org/projects/prepaid-manager.py])
+        [https://honk.sigxcpu.org/piki/projects/ppm/])
 AM_INIT_AUTOMAKE([-Wno-portability])
 
 IT_PROG_INTLTOOL([0.35.0])

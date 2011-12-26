@@ -69,7 +69,7 @@ class ModemManagerProxy(GObject.GObject):
         self.modem = modem
 
     def mm_request(func):
-        def wrapped_f( self, *args, **kw) :
+        def wrapped_f( self, *args, **kw):
             self.request = "%s" % func.func_name
             if kw.has_key('reply_func'):
                 self.reply_func = kw['reply_func']
@@ -170,9 +170,13 @@ class ModemManagerProxy(GObject.GObject):
                   self.handle_dbus_reply, None)
 
     def modem_enable(self, reply_func=None, error_func=None):
-        self._modem__enable(True)
+        self._modem__enable(True,
+                            reply_func=reply_func,
+                            error_func=error_func)
 
     def modem_disable(self, reply_func=None, error_func=None):
-        self._modem_enable(False)
+        self._modem_enable(False,
+                           reply_func=reply_func,
+                           error_func=error_func)
 
 GObject.type_register(ModemManagerProxy)

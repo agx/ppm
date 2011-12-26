@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim: set fileencoding=utf-8 :
 #
-# (C) 2010 Guido Guenther <agx@sigxcpu.org>
+# (C) 2010,2011 Guido Guenther <agx@sigxcpu.org>
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 3 of the License, or
@@ -111,7 +111,7 @@ class PPMController(GObject.GObject):
 
         self.provider = provider
         self.emit('provider-changed', provider)
-        
+
     def _imsi_to_network_id(self, imsi):
         """Extract mmc and mnc from imsi"""
         mcc = imsi[0:3]
@@ -186,7 +186,7 @@ class PPMController(GObject.GObject):
 
         self.mm = ModemManagerProxy()
         self._connect_mm_signals()
-        
+
         modems = self.mm.get_modems()
         if modems:
             modem = modems[0] # FIXME: handle multiple modems
@@ -225,7 +225,7 @@ class PPMController(GObject.GObject):
     def on_mm_request_finished(self, obj, mm_proxy):
         logging.debug("Finished modem request")
         self.view.close_modem_response()
-    
+
     def on_balance_info_fetched(self, var, user_data):
         """Callback for succesful MM fetch balance info call"""
         balance = var.unpack()[0]
@@ -269,14 +269,14 @@ class PPMController(GObject.GObject):
     def on_balance_info_changed(self, obj, balance):
         """Act on balance-info-changed signal"""
         logging.debug("Balance info changed")
-        
+
         timestamp = time.asctime()
         if self.account:
             self.account.update_balance(balance, timestamp)
 
         self.view.update_account_balance_information(balance, timestamp)
 
-    
+
 GObject.type_register(PPMController)
 
 
@@ -302,10 +302,10 @@ class PPMObject(object):
     def _add_elements(self, *args):
         for name in args:
             self._add_elem(name)
-    
+
 # View
 class PPMDialog(GObject.GObject, PPMObject):
-    
+
     def _init_about_dialog(self):
         self.about_dialog = Gtk.AboutDialog(
                                 authors = ["Guido Günther <agx@sigxcpu.org>"],
@@ -409,7 +409,7 @@ class PPMDialog(GObject.GObject, PPMObject):
 
     def clear_top_up_information(self):
         self.label_top_up_reply.set_text("")
-    
+
     def show_provider_balance_info_missing(self, provider):
         self.provider_info_missing_dialog.balance_info_missing(provider)
 
@@ -539,9 +539,8 @@ class PPMNoModemFoundInfoBar(PPMInfoBar):
 
 
 class PPMProviderAssistant(PPMObject):
-
     PAGE_INTRO, PAGE_COUNTRIES, PAGE_PROVIDERS, PAGE_CONFIRM = range(0, 4)
-    
+
     def __init__(self, main_dialog):
         PPMObject.__init__(self, main_dialog, "ppm-provider-assistant")
         self.assistant = self.builder.get_object("ppm_provider_assistant")
@@ -576,7 +575,7 @@ class PPMProviderAssistant(PPMObject):
         lcode = self._get_current_country_from_locale()
         if not self.liststore_countries:
             self.liststore_countries = self.builder.get_object(
-                                                         "liststore_countries") 
+                                                         "liststore_countries")
             for (country, code) in self.controller.get_provider_countries():
                 if country is None:
                     country = code
@@ -595,11 +594,11 @@ class PPMProviderAssistant(PPMObject):
 
     def _all_pages_func(self, current_page, user_data):
         return current_page+1
-        
+
     def show(self, providers=None):
         self.possible_providers = providers
         self.provider = None
-    
+
         if not self.possible_providers:
             # No list of possible providers so allow to select the country first
             self._fill_liststore_countries()
@@ -641,7 +640,7 @@ class PPMProviderAssistant(PPMObject):
         elif self.assistant.get_current_page() == self.PAGE_CONFIRM:
             self.label_country.set_text(self.country_code)
             self.label_provider.set_text(self.provider)
-                
+
     def on_treeview_countries_changed(self, obj):
         self.assistant.set_page_complete(self.vbox_countries, True)
         selection = self.treeview_countries.get_selection()
@@ -649,7 +648,7 @@ class PPMProviderAssistant(PPMObject):
         if not iter:
             return
         self.country_code = model.get_value(iter, 1)
-                
+
     def on_treeview_providers_changed(self, obj):
         self.assistant.set_page_complete(self.vbox_providers, True)
         selection = self.treeview_providers.get_selection()
@@ -670,7 +669,7 @@ class PPMProviderInfoMissingDialog(object):
     If information about the provider is missing redirect the user to a webpage
     that explains howto provide that information
     """
-    
+
     wiki_url = ('<a href = \"http://live.gnome.org/NetworkManager/'
                 'MobileBroadband/ServiceProviders\">GNOME Wiki</a>')
 
@@ -707,7 +706,7 @@ class PPMProviderInfoMissingDialog(object):
     def top_up_info_missing(self, provider):
         msg = self.messages['top_up_info_missing'] % provider.name
         self._run(msg)
-        
+
     def provider_unknown(self, mcc, mnc):
         msg = self.messages['provider_unknown'] % (mcc, mnc)
         self._run(msg)
@@ -763,7 +762,7 @@ def main(args):
     controller = PPMController()
     main_dialog = PPMDialog(controller)
     controller.schedule_setup()
-    
+
     Gtk.main()
 
 if __name__ == "__main__":

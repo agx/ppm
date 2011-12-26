@@ -27,7 +27,7 @@ class ModemError(Exception):
 
     def is_forbidden(self):
         return [False, True][self.msg.find("Operation not allowed") != -1]
-                       
+
     def is_disabled(self):
          return [False, True][self.msg.find("not enabled") != -1]
 
@@ -47,7 +47,7 @@ class ModemManagerProxy(GObject.GObject):
     MM_DBUS_INTERFACE_MODEM_GSM_CARD='org.freedesktop.ModemManager.Modem.Gsm.Card'
     MM_DBUS_INTERFACE_MODEM_GSM_USSD='org.freedesktop.ModemManager.Modem.Gsm.Ussd'
     MM_DBUS_TIMEOUT = 5000
-    
+
     __gsignals__ = {
         # Emitted when a request to MM starts
         'request-started':  (GObject.SignalFlags.RUN_FIRST, None,
@@ -110,7 +110,7 @@ class ModemManagerProxy(GObject.GObject):
             if self.error_func:
                 me = ModemError("%s failed: %s" % (self.request, err))
                 self.error_func(me)
-    
+
     def get_modems(self):
         modems = []
         mm = Gio.DBusProxy.new_sync(self.bus,

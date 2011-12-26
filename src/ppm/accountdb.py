@@ -89,7 +89,7 @@ class AccountDB(object):
 
     def _bind_account(self, imsi):
         """Bind a new account object to a gsettings path"""
-        
+
         path = self._account_path(imsi)
         account = Account()
         account.props.identifier =  self.imsi_to_identifier(imsi)
@@ -136,4 +136,4 @@ class AccountDB(object):
         account.props.name = provider.name
         account.props.code = provider.country
 
-        
+

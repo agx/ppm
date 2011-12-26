@@ -90,13 +90,12 @@ class PPMController(GObject.GObject):
             logging.error("No idea how to top up balance for "
                           "%s in %s.", self.provider.name, self.provider.country)
 
-    def set_provider(self, provider=None,
-                     account=None,
-                     country_code=None, name=None):
+    def set_provider(self, provider=None, account=None, country_code=None,
+                     name=None):
         """
         Change the current provider to provider and inform the view
 
-        Input can be a provder, an account or, (name, country_code)
+        Input can be a provider, an account or (name, country_code)
         Once finished we know how to access account balance, top up, etc.
         """
         if account:
@@ -254,6 +253,7 @@ class PPMController(GObject.GObject):
         logging.debug("Provider changed to '%s'", provider.name)
 
         self.view.update_provider_name(provider.name)
+        self.view.update_topup_length(provider.top_up_code_length)
 
         if self.imsi and not self.account:
             # We have an imsi and the user told us what provider to use:
@@ -345,13 +345,13 @@ class PPMDialog(GObject.GObject, PPMObject):
     def __init__(self, controller):
         GObject.GObject.__init__(self)
         PPMObject.__init__(self, None, "ppm")
+        self.code_len = 0
         self.controller = controller
         # Register ourself to the controller
         self.controller.view = self
 
         self._setup_ui()
         self.dialog.show()
-
 
     def close(self):
         self.dialog.hide()
@@ -388,15 +388,28 @@ class PPMDialog(GObject.GObject, PPMObject):
         # and communicate the change to the controller
         raise NotImplementedError
 
-    def on_entry_code_insert(self, *args):
-        if self.entry_code.get_text():
-            self.button_top_up.set_sensitive(True)
-        else:
-            self.button_top_up.set_sensitive(False)
+    def on_entry_code_insert(self, entry):
+        cur_len =  entry.get_text_length()
+        sensitive = True
+
+        if self.code_len > 0:
+            self.entry_code.set_progress_fraction(float(cur_len) /
+                                                  self.code_len)
+            if cur_len != self.code_len:
+                sensitive = False
+        self.button_top_up.set_sensitive(sensitive)
 
     def update_provider_name(self, provider_name):
         self.label_balance_provider_name.set_text(provider_name)
         self.label_topup_provider_name.set_text(provider_name)
+
+    def update_topup_length(self, len):
+        """Adjust GtkEntry to the length of the top up code"""
+        placeholder = ''
+        self.code_len = len
+        if len:
+            placeholder = "".join([ str(x)[-1] for x in range(1, len+1) ])
+        self.entry_code.set_placeholder_text(placeholder)
 
     def update_account_balance_information(self, balance_text, timestamp):
         self.label_balance_info.set_text(balance_text)
@@ -703,7 +716,7 @@ class PPMProviderInfoMissingDialog(object):
         msg = self.messages['balance_info_missing'] % provider.name
         self._run(msg)
 
-    def top_up_info_missing(self, provider):
+    def top_upinfo_missing(self, provider):
         msg = self.messages['top_up_info_missing'] % provider.name
         self._run(msg)
 

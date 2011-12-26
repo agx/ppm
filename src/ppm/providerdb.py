@@ -90,7 +90,13 @@ class ProviderDB(object):
                 if t.tag == 'ussd':
                     sequence = t.text
                     replacement = t.attrib['replacement']
-                    provider.add_top_up_cmd({'ussd': [sequence, replacement]})
+                    try:
+                        length = int(t.attrib['length'])
+                    except KeyError:
+                        length = 0
+                    provider.add_top_up_cmd({'ussd': [sequence,
+                                                      replacement,
+                                                      length]})
                 if t.tag == 'sms':
                     number = t.text
                     text = t.attrib['text']

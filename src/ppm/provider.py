@@ -62,6 +62,17 @@ class Provider(object):
         else:
             return False
 
+    def get_top_up_code_length(self):
+        """The length of the topup code"""
+        if self.has_top_up_cmd():
+            return self.top_up_cmds['ussd'][2]
+        else:
+            return 0
+
+    @property
+    def top_up_code_length(self):
+        return self.get_top_up_code_length()
+
     def fetch_balance(self, mm, reply_func=None, error_func=None):
         if self.has_fetch_balance_cmd():
             mm.ussd_initiate (self.fetch_balance_cmds['ussd'],

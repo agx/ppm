@@ -14,9 +14,9 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkMenuItem" id="menu_item_file">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_File</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -26,9 +26,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menuitem_quit">
                         <property name="label">gtk-quit</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_close_clicked" swapped="no"/>
@@ -40,9 +40,9 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="menuitem_help">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
                 <child type="submenu">
@@ -52,9 +52,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="imagemenuitem_about">
                         <property name="label">gtk-about</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_about_activated" swapped="no"/>
@@ -119,6 +119,7 @@
                 <child>
                   <object class="GtkButton" id="button_provider_change">
                     <property name="label" translatable="yes">change</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="has_tooltip">True</property>
@@ -188,6 +189,7 @@
                 <child>
                   <object class="GtkButton" id="button_check_balance">
                     <property name="label" translatable="yes">check</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -264,6 +266,7 @@
                 <child>
                   <object class="GtkButton" id="button_provider_change1">
                     <property name="label" translatable="yes">change</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_action_appearance">False</property>
@@ -280,6 +283,7 @@
                 <child>
                   <object class="GtkButton" id="button_top_up">
                     <property name="label" translatable="yes">top up</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
@@ -310,6 +314,7 @@
                     <property name="tooltip_text" translatable="yes">Enter code to top up credit to your prepaid card.</property>
                     <property name="invisible_char">●</property>
                     <property name="invisible_char_set">True</property>
+                    <property name="placeholder_text">01234567890123</property>
                     <signal name="changed" handler="on_entry_code_insert" swapped="no"/>
                   </object>
                   <packing>

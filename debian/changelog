@@ -1,3 +1,12 @@
+prepaid-manager-applet (0.0.3-1) unstable; urgency=low
+
+  * New version 0.0.3
+  * Add missing Python build-dep
+  * Fix format of debian/copyright
+  * Bump standards version to 3.9.2
+
+ -- Guido Günther <agx@sigxcpu.org>  Tue, 27 Dec 2011 20:04:51 +0100
+
 prepaid-manager-applet (0.0.2.1-1) unstable; urgency=low
 
   * New upstream version

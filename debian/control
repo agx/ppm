@@ -3,6 +3,7 @@ Section: net
 Priority: extra
 Maintainer: Guido Günther <agx@sigxcpu.org>
 Build-Depends: debhelper (>= 7.0.50~),
+ python,
  libdbus-1-dev,
  python-dbus,
  libglib2.0-bin,

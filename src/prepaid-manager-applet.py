@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # vim: set fileencoding=utf-8 :
 #
-# (C) 2010 Guido Guenther <agx@sigxcpu.org>
+# (C) 2010,2011 Guido Guenther <agx@sigxcpu.org>
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 3 of the License, or
@@ -90,13 +90,12 @@ class PPMController(GObject.GObject):
             logging.error("No idea how to top up balance for "
                           "%s in %s.", self.provider.name, self.provider.country)
 
-    def set_provider(self, provider=None,
-                     account=None,
-                     country_code=None, name=None):
+    def set_provider(self, provider=None, account=None, country_code=None,
+                     name=None):
         """
         Change the current provider to provider and inform the view
 
-        Input can be a provder, an account or, (name, country_code)
+        Input can be a provider, an account or (name, country_code)
         Once finished we know how to access account balance, top up, etc.
         """
         if account:
@@ -111,7 +110,7 @@ class PPMController(GObject.GObject):
 
         self.provider = provider
         self.emit('provider-changed', provider)
-        
+
     def _imsi_to_network_id(self, imsi):
         """Extract mmc and mnc from imsi"""
         mcc = imsi[0:3]
@@ -144,7 +143,9 @@ class PPMController(GObject.GObject):
         return self.account
 
     def init_account_and_provider(self):
-        """Fetch the imsi deduce account and provider information"""
+        """Fetch the imsi and deduce account and provider information"""
+
+        logging.debug("Fetching account information")
         try:
             self.imsi = self.mm.get_imsi()
         except ModemError as me:
@@ -156,12 +157,9 @@ class PPMController(GObject.GObject):
                 self.view.show_modem_error(me.msg)
                 return False
 
-            logging.info("modem not enabled")
-            if self.view.show_modem_enable() != Gtk.ResponseType.YES:
-                return False
-            else:
-                self.mm.modem_enable(reply_func=self.init_account_and_provider)
-            return True
+            logging.info("modem not enabled.")
+            self.view.show_modem_enable()
+            return False
 
         try:
             account = self._get_account_from_accountdb(self.imsi)
@@ -183,21 +181,29 @@ class PPMController(GObject.GObject):
         return False
 
     def setup(self):
-        logging.debug("Setting up")        
+        logging.debug("Setting up")
 
         self.mm = ModemManagerProxy()
         self._connect_mm_signals()
-        
+
         modems = self.mm.get_modems()
         if modems:
             modem = modems[0] # FIXME: handle multiple modems
             logging.debug("Using modem %s" % modem)
             self.mm.set_modem(modem)
             GObject.timeout_add(500, self.init_account_and_provider)
-        else:        
-            self.view.show_error("No modem found.")
-            self.quit()
+        else:
+            self.view.show_no_modem_found()
         return False
+
+    def schedule_setup(self):
+        """Schedule another run of setup"""
+        GObject.timeout_add(1, self.setup)
+
+    def enable_modem(self):
+        """Enable the modem"""
+        self.mm.modem_enable(reply_func=self.on_modem_enable,
+                             error_func=self.on_modem_error)
 
     def quit(self):
         """Clean up"""
@@ -218,7 +224,7 @@ class PPMController(GObject.GObject):
     def on_mm_request_finished(self, obj, mm_proxy):
         logging.debug("Finished modem request")
         self.view.close_modem_response()
-    
+
     def on_balance_info_fetched(self, var, user_data):
         """Callback for succesful MM fetch balance info call"""
         balance = var.unpack()[0]
@@ -229,6 +235,15 @@ class PPMController(GObject.GObject):
         reply = var.unpack()[0]
         self.view.update_top_up_information(reply)
 
+    def on_modem_enable(self, var, user_data):
+        """Callback for succesful MM enable modem  call"""
+        GObject.timeout_add(500, self.init_account_and_provider)
+
+    def on_modem_enable_error(self, e):
+        """Callback for failed MM enable modem  call"""
+        self.on_modem_error(e)
+        GObject.timeout_add(500, self.init_account_and_provider)
+
     def on_modem_error(self, e):
         self.view.show_modem_error(e.msg)
         logging.error(e.msg)
@@ -238,6 +253,7 @@ class PPMController(GObject.GObject):
         logging.debug("Provider changed to '%s'", provider.name)
 
         self.view.update_provider_name(provider.name)
+        self.view.update_topup_length(provider.top_up_code_length)
 
         if self.imsi and not self.account:
             # We have an imsi and the user told us what provider to use:
@@ -253,14 +269,14 @@ class PPMController(GObject.GObject):
     def on_balance_info_changed(self, obj, balance):
         """Act on balance-info-changed signal"""
         logging.debug("Balance info changed")
-        
+
         timestamp = time.asctime()
         if self.account:
             self.account.update_balance(balance, timestamp)
 
         self.view.update_account_balance_information(balance, timestamp)
 
-    
+
 GObject.type_register(PPMController)
 
 
@@ -286,10 +302,10 @@ class PPMObject(object):
     def _add_elements(self, *args):
         for name in args:
             self._add_elem(name)
-    
+
 # View
 class PPMDialog(GObject.GObject, PPMObject):
-    
+
     def _init_about_dialog(self):
         self.about_dialog = Gtk.AboutDialog(
                                 authors = ["Guido Günther <agx@sigxcpu.org>"],
@@ -302,10 +318,15 @@ class PPMDialog(GObject.GObject, PPMObject):
                                 license_type = Gtk.License.GPL_3_0)
 
     def _init_subdialogs(self):
+        """Init dialogs shown from the main window"""
         self.provider_info_missing_dialog = PPMProviderInfoMissingDialog(self)
         self.provider_assistant = PPMProviderAssistant(self)
-        self.modem_response = PPMModemResponse(self)
         self._init_about_dialog()
+
+    def _init_infobars(self):
+        self.enable_modem_info_bar = PPMEnableModemInfoBar(self)
+        self.modem_response_info_bar = PPMModemResponseInfoBar(self)
+        self.no_modem_found_info_bar = PPMNoModemFoundInfoBar(self)
 
     def _setup_ui(self):
         self.dialog = self.builder.get_object("ppm_dialog")
@@ -316,12 +337,15 @@ class PPMDialog(GObject.GObject, PPMObject):
                            "label_balance_from",
                            "entry_code",
                            "button_top_up",
-                           "label_top_up_reply")
+                           "label_top_up_reply",
+                           "vbox_main")
+        self._init_infobars()
         self._init_subdialogs()
 
     def __init__(self, controller):
         GObject.GObject.__init__(self)
         PPMObject.__init__(self, None, "ppm")
+        self.code_len = 0
         self.controller = controller
         # Register ourself to the controller
         self.controller.view = self
@@ -332,6 +356,11 @@ class PPMDialog(GObject.GObject, PPMObject):
     def close(self):
         self.dialog.hide()
         self.dialog.destroy()
+
+    @property
+    def info_bar_container(self):
+        """The widget that contains the main info bar"""
+        return self.vbox_main
 
     def get_top_up_code(self):
         return self.entry_code.get_text().strip()
@@ -359,15 +388,28 @@ class PPMDialog(GObject.GObject, PPMObject):
         # and communicate the change to the controller
         raise NotImplementedError
 
-    def on_entry_code_insert(self, *args):
-        if self.entry_code.get_text():
-            self.button_top_up.set_sensitive(True)
-        else:
-            self.button_top_up.set_sensitive(False)        
+    def on_entry_code_insert(self, entry):
+        cur_len =  entry.get_text_length()
+        sensitive = True
+
+        if self.code_len > 0:
+            self.entry_code.set_progress_fraction(float(cur_len) /
+                                                  self.code_len)
+            if cur_len != self.code_len:
+                sensitive = False
+        self.button_top_up.set_sensitive(sensitive)
 
     def update_provider_name(self, provider_name):
         self.label_balance_provider_name.set_text(provider_name)
         self.label_topup_provider_name.set_text(provider_name)
+
+    def update_topup_length(self, len):
+        """Adjust GtkEntry to the length of the top up code"""
+        placeholder = ''
+        self.code_len = len
+        if len:
+            placeholder = "".join([ str(x)[-1] for x in range(1, len+1) ])
+        self.entry_code.set_placeholder_text(placeholder)
 
     def update_account_balance_information(self, balance_text, timestamp):
         self.label_balance_info.set_text(balance_text)
@@ -380,7 +422,7 @@ class PPMDialog(GObject.GObject, PPMObject):
 
     def clear_top_up_information(self):
         self.label_top_up_reply.set_text("")
-    
+
     def show_provider_balance_info_missing(self, provider):
         self.provider_info_missing_dialog.balance_info_missing(provider)
 
@@ -401,19 +443,14 @@ class PPMDialog(GObject.GObject, PPMObject):
         dialog.hide()
 
     def show_modem_enable(self):
-        """Show dialog that asks if we should enable the modem"""
-        dialog = Gtk.MessageDialog(parent=self.dialog,
-                                   flags=Gtk.DialogFlags.MODAL |
-                                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                   message_type=Gtk.MessageType.QUESTION,
-                                   buttons=Gtk.ButtonsType.YES_NO)
-        dialog.set_markup(_("Enable Modem?"))
-        ret = dialog.run()
-        dialog.hide()
-        return ret
+        self.enable_modem_info_bar.show()
 
     def show_provider_assistant(self, providers=None):
         self.provider_assistant.show(providers)
+
+    def show_no_modem_found(self):
+        """Show the 'no modem found' info bar"""
+        self.no_modem_found_info_bar.show()
 
     def show_error(self, msg):
         """show generic error"""
@@ -428,18 +465,95 @@ class PPMDialog(GObject.GObject, PPMObject):
         error.hide()
 
     def show_modem_response(self):
-        self.modem_response.show()
+        self.modem_response_info_bar.show()
 
     def close_modem_response(self):
-        self.modem_response.close()
+        self.modem_response_info_bar.hide()
 
 
 GObject.type_register(PPMDialog)
 
-class PPMProviderAssistant(PPMObject):
 
+class PPMInfoBar(object):
+    def __init__(self, view):
+        self.view = view
+        self.controller = view.controller
+        self.info_bar = Gtk.InfoBar()
+
+    def show(self):
+        self.view.info_bar_container.add(self.info_bar)
+        self.info_bar.show_all()
+
+    def hide(self):
+        self.info_bar.hide()
+        self.view.info_bar_container.remove(self.info_bar)
+        self.view.dialog.resize(1, 1)
+
+
+class PPMEnableModemInfoBar(PPMInfoBar):
+    """Info bar attached to the main window"""
+
+    def __init__(self, view):
+        PPMInfoBar.__init__(self, view)
+        self.info_bar.add_button(_("Enable"), Gtk.ResponseType.OK)
+        self.info_bar.set_message_type(Gtk.MessageType.WARNING)
+        self.msg_label = Gtk.Label(_("Modem not enabled"))
+        content_area = self.info_bar.get_content_area()
+        content_area.add(self.msg_label)
+        self.msg_label.show()
+        self.info_bar.connect("response", self.on_enable_clicked)
+
+    def on_enable_clicked(self, info_bar,  response_id):
+        self.hide()
+        self.controller.enable_modem()
+
+
+class PPMModemResponseInfoBar(PPMInfoBar):
+    """Info bar used when waiting for a modem response"""
+    def __init__(self, view):
+        PPMInfoBar.__init__(self, view)
+        self.info_bar.set_message_type(Gtk.MessageType.INFO)
+        self.progressbar = Gtk.ProgressBar(text=_("Awaiting modem response..."))
+        self.progressbar.set_show_text(True)
+        content_area = self.info_bar.get_content_area()
+        content_area.add(self.progressbar)
+
+    def show(self):
+        logging.debug("Awaiting modem resonse")
+        self.timer = GObject.timeout_add(50, self.do_progress,
+                                        priority=GLib.PRIORITY_HIGH)
+        PPMInfoBar.show(self)
+
+    def hide(self):
+        if self.timer:
+            GObject.source_remove(self.timer)
+            self.timer = None
+        PPMInfoBar.hide(self)
+
+    def do_progress(self):
+        self.progressbar.pulse()
+        return True
+
+
+class PPMNoModemFoundInfoBar(PPMInfoBar):
+    def __init__(self, container):
+        PPMInfoBar.__init__(self, container)
+        self.info_bar.set_message_type(Gtk.MessageType.WARNING)
+        self.msg_label = Gtk.Label(_("No modem found."))
+        content_area = self.info_bar.get_content_area()
+        content_area.add(self.msg_label)
+        self.info_bar.add_button(_("Try again"), Gtk.ResponseType.OK)
+        self.info_bar.connect("response", self.on_try_again_clicked)
+
+    def on_try_again_clicked(self, info_bar,  response_id):
+        logging.debug("Rescheduling modem setup")
+        self.hide()
+        self.controller.schedule_setup()
+
+
+class PPMProviderAssistant(PPMObject):
     PAGE_INTRO, PAGE_COUNTRIES, PAGE_PROVIDERS, PAGE_CONFIRM = range(0, 4)
-    
+
     def __init__(self, main_dialog):
         PPMObject.__init__(self, main_dialog, "ppm-provider-assistant")
         self.assistant = self.builder.get_object("ppm_provider_assistant")
@@ -474,7 +588,7 @@ class PPMProviderAssistant(PPMObject):
         lcode = self._get_current_country_from_locale()
         if not self.liststore_countries:
             self.liststore_countries = self.builder.get_object(
-                                                         "liststore_countries") 
+                                                         "liststore_countries")
             for (country, code) in self.controller.get_provider_countries():
                 if country is None:
                     country = code
@@ -493,11 +607,11 @@ class PPMProviderAssistant(PPMObject):
 
     def _all_pages_func(self, current_page, user_data):
         return current_page+1
-        
+
     def show(self, providers=None):
         self.possible_providers = providers
         self.provider = None
-    
+
         if not self.possible_providers:
             # No list of possible providers so allow to select the country first
             self._fill_liststore_countries()
@@ -539,7 +653,7 @@ class PPMProviderAssistant(PPMObject):
         elif self.assistant.get_current_page() == self.PAGE_CONFIRM:
             self.label_country.set_text(self.country_code)
             self.label_provider.set_text(self.provider)
-                
+
     def on_treeview_countries_changed(self, obj):
         self.assistant.set_page_complete(self.vbox_countries, True)
         selection = self.treeview_countries.get_selection()
@@ -547,7 +661,7 @@ class PPMProviderAssistant(PPMObject):
         if not iter:
             return
         self.country_code = model.get_value(iter, 1)
-                
+
     def on_treeview_providers_changed(self, obj):
         self.assistant.set_page_complete(self.vbox_providers, True)
         selection = self.treeview_providers.get_selection()
@@ -568,7 +682,7 @@ class PPMProviderInfoMissingDialog(object):
     If information about the provider is missing redirect the user to a webpage
     that explains howto provide that information
     """
-    
+
     wiki_url = ('<a href = \"http://live.gnome.org/NetworkManager/'
                 'MobileBroadband/ServiceProviders\">GNOME Wiki</a>')
 
@@ -602,38 +716,13 @@ class PPMProviderInfoMissingDialog(object):
         msg = self.messages['balance_info_missing'] % provider.name
         self._run(msg)
 
-    def top_up_info_missing(self, provider):
+    def top_upinfo_missing(self, provider):
         msg = self.messages['top_up_info_missing'] % provider.name
         self._run(msg)
-        
+
     def provider_unknown(self, mcc, mnc):
         msg = self.messages['provider_unknown'] % (mcc, mnc)
         self._run(msg)
-
-
-class PPMModemResponse(PPMObject):
-    """Dialog shown while waiting for a response from the modem"""
-    def __init__(self, main_dialog):
-        PPMObject.__init__(self, main_dialog, "ppm-modem-request")
-        self.dialog = self.builder.get_object("ppm_modem_request")
-        self._add_elements("progressbar")
-        self.dialog.set_transient_for(main_dialog.dialog)
-        self.timer = None
-        
-    def show(self):
-        self.timer = GObject.timeout_add(50, self.do_progress,
-                                         priority=GLib.PRIORITY_HIGH)
-        self.dialog.show()
-
-    def close(self):
-        if self.timer:
-            GObject.source_remove(self.timer)
-            self.timer = None
-        self.dialog.hide()
-
-    def do_progress(self):
-        self.progressbar.pulse()
-        return True
 
 
 def setup_i18n():
@@ -685,8 +774,8 @@ def main(args):
 
     controller = PPMController()
     main_dialog = PPMDialog(controller)
-    GObject.timeout_add(1, controller.setup)
-    
+    controller.schedule_setup()
+
     Gtk.main()
 
 if __name__ == "__main__":

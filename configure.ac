@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 
 AC_PREREQ([2.67])
-AC_INIT([prepaid-manager-applet], [0.0.2.1],
+AC_INIT([prepaid-manager-applet], [0.0.3],
         [https://honk.sigxcpu.org/piki/projects/ppm/])
 AM_INIT_AUTOMAKE([-Wno-portability])
 

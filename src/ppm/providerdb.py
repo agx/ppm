@@ -48,7 +48,7 @@ class ProviderDB(object):
         else:
             self._tree = self._load_countries()
             return self.__countries
-        
+
     def _load_countries(self):
         try:
             for line in file(self.country_codes, 'r'):
@@ -90,12 +90,18 @@ class ProviderDB(object):
                 if t.tag == 'ussd':
                     sequence = t.text
                     replacement = t.attrib['replacement']
-                    provider.add_top_up_cmd({'ussd': [sequence, replacement]})
+                    try:
+                        length = int(t.attrib['length'])
+                    except KeyError:
+                        length = 0
+                    provider.add_top_up_cmd({'ussd': [sequence,
+                                                      replacement,
+                                                      length]})
                 if t.tag == 'sms':
                     number = t.text
                     text = t.attrib['text']
                     provider.add_top_up_cmd({'sms': (number, text)})
-                    
+
     def get_providers(self, mcc, mnc):
         """
         Get possible providers for the current mcc and mnc from the database
@@ -119,7 +125,7 @@ class ProviderDB(object):
         for r in searcher(self.tree):
             return self._fill_provider_info(r)
         return None
-        
+
     def get_country_codes(self):
         path = "/serviceproviders/country"
         searcher = etree.ETXPath(path)
@@ -133,7 +139,7 @@ class ProviderDB(object):
                 yield (self.countries[code], code)
             except KeyError:
                 yield (None, code)
-    
+
     def get_providers_by_code(self, country_code):
         path = ("/serviceproviders/country[@code='%s']/provider/name" %
                 country_code)

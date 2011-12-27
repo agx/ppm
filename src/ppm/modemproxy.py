@@ -27,7 +27,7 @@ class ModemError(Exception):
 
     def is_forbidden(self):
         return [False, True][self.msg.find("Operation not allowed") != -1]
-                       
+
     def is_disabled(self):
          return [False, True][self.msg.find("not enabled") != -1]
 
@@ -47,11 +47,12 @@ class ModemManagerProxy(GObject.GObject):
     MM_DBUS_INTERFACE_MODEM_GSM_CARD='org.freedesktop.ModemManager.Modem.Gsm.Card'
     MM_DBUS_INTERFACE_MODEM_GSM_USSD='org.freedesktop.ModemManager.Modem.Gsm.Ussd'
     MM_DBUS_TIMEOUT = 5000
-    
+
     __gsignals__ = {
-        # Emitted when we got the new account balance from the provider
+        # Emitted when a request to MM starts
         'request-started':  (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
+        # Emitted when a request has finished
         'request-finished': (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
         }
@@ -69,7 +70,7 @@ class ModemManagerProxy(GObject.GObject):
         self.modem = modem
 
     def mm_request(func):
-        def wrapped_f( self, *args, **kw) :
+        def wrapped_f( self, *args, **kw):
             self.request = "%s" % func.func_name
             if kw.has_key('reply_func'):
                 self.reply_func = kw['reply_func']
@@ -109,7 +110,7 @@ class ModemManagerProxy(GObject.GObject):
             if self.error_func:
                 me = ModemError("%s failed: %s" % (self.request, err))
                 self.error_func(me)
-    
+
     def get_modems(self):
         modems = []
         mm = Gio.DBusProxy.new_sync(self.bus,
@@ -170,9 +171,13 @@ class ModemManagerProxy(GObject.GObject):
                   self.handle_dbus_reply, None)
 
     def modem_enable(self, reply_func=None, error_func=None):
-        self._modem__enable(True)
+        self._modem__enable(True,
+                            reply_func=reply_func,
+                            error_func=error_func)
 
     def modem_disable(self, reply_func=None, error_func=None):
-        self._modem_enable(False)
+        self._modem_enable(False,
+                           reply_func=reply_func,
+                           error_func=error_func)
 
 GObject.type_register(ModemManagerProxy)

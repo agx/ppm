@@ -1,3 +1,10 @@
+==============
+Version 0.0.3
+==============
+* Better handle missing and disabled modems
+* Better feedback when entering top up codes if
+  m-b-p-i has length information for the ussd code.
+
 ===============
 Version 0.0.2.1
 ===============

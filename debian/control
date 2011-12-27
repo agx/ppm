@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 7.0.50~),
  gnome-doc-utils,
  automake,
  autoconf
-Standards-Version: 3.9.1
+Standards-Version: 3.9.2
 Homepage: https://honk.sigxcpu.org/piki/projects/ppm/
 Vcs-Git: git://honk.sigxcpu.org/git/ppm.git
 

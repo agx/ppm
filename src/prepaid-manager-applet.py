@@ -247,6 +247,8 @@ class PPMController(GObject.GObject):
     def on_modem_error(self, e):
         self.view.show_modem_error(e.msg)
         logging.error(e.msg)
+        # The modem might have disconnected. So reschedule the setup
+        self.schedule_setup()
 
     def on_provider_changed(self, obj, provider):
         """Act on provider-changed signal"""

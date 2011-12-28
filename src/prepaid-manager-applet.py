@@ -579,6 +579,7 @@ class PPMProviderAssistant(PPMObject):
         self.country_code = None
         self.provider = None
         self.possible_providers = None
+        self.providers_initialized = False
 
     def _get_current_country_from_locale(self):
         (l, enc) = locale.getlocale()
@@ -621,6 +622,7 @@ class PPMProviderAssistant(PPMObject):
     def show(self, providers=None):
         self.possible_providers = providers
         self.provider = None
+        self.providers_initialized = False
 
         if not self.possible_providers:
             # No list of possible providers so allow to select the country first
@@ -657,8 +659,17 @@ class PPMProviderAssistant(PPMObject):
     def on_ppm_provider_assistant_prepare(self, obj, page):
         if self.assistant.get_current_page() == self.PAGE_PROVIDERS:
             if self.possible_providers:
+                if self.providers_initialized:
+                    return
+                else:
+                    self.providers_initialized = True
                 self._fill_provider_liststore_by_providers()
+                self.providers_intialized = True
             else:
+                if self.country_code == self.providers_initialized:
+                    return
+                else:
+                    self.providers_initialized = self.country_code
                 self._fill_provider_liststore_by_country_code(self.country_code)
         elif self.assistant.get_current_page() == self.PAGE_CONFIRM:
             self.label_country.set_text(self.country_code)

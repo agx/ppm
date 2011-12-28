@@ -665,20 +665,20 @@ class PPMProviderAssistant(PPMObject):
             self.label_provider.set_text(self.provider)
 
     def on_treeview_countries_changed(self, obj):
-        self.assistant.set_page_complete(self.vbox_countries, True)
         selection = self.treeview_countries.get_selection()
         (model, iter) = selection.get_selected()
         if not iter:
             return
         self.country_code = model.get_value(iter, 1)
+        self.assistant.set_page_complete(self.vbox_countries, True)
 
     def on_treeview_providers_changed(self, obj):
-        self.assistant.set_page_complete(self.vbox_providers, True)
         selection = self.treeview_providers.get_selection()
         (model, iter) = selection.get_selected()
         if not iter:
             return
         self.provider = model.get_value(iter, 0)
+        self.assistant.set_page_complete(self.vbox_providers, True)
 
     def on_ppm_provider_assistant_close(self, obj):
         logging.debug("Selected: %s  %s", self.provider, self.country_code)

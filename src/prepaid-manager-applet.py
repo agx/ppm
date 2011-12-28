@@ -117,11 +117,12 @@ class PPMController(GObject.GObject):
         mnc = imsi[3:5]
         return (mcc, mnc)
 
-    def _get_provider_interactive(self, imsi):
+    def get_provider_interactive(self, imsi=None):
         """
         Given the imsi, determine the provider based on that information
         from providerdb, request user input where ncessary
         """
+        imsi = imsi or self.imsi
         mcc, mnc = self._imsi_to_network_id(imsi)
         self.providers = self.providerdb.get_providers(mcc, mnc)
         if self.providers:
@@ -175,7 +176,7 @@ class PPMController(GObject.GObject):
         else:
             # Account not known yet, get provider interactively
             self.account = None
-            self._get_provider_interactive(self.imsi)
+            self.get_provider_interactive(self.imsi)
 
         # Everything worked out, disable the timer.
         return False
@@ -386,9 +387,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.controller.fetch_balance()
 
     def on_provider_change_clicked(self, dummy):
-        # FIXME: allow to select provider
-        # and communicate the change to the controller
-        raise NotImplementedError
+        self.controller.get_provider_interactive()
 
     def on_entry_code_insert(self, entry):
         cur_len =  entry.get_text_length()

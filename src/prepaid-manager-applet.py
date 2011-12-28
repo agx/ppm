@@ -227,6 +227,9 @@ class PPMController(GObject.GObject):
     def get_provider_providers(self, country_code):
         return self.providerdb.get_providers_by_code(country_code)
 
+    def get_country_by_code(self, code):
+        return self.providerdb.get_country_by_code(code)
+
     def on_mm_request_started(self, obj, mm_proxy):
         logging.debug("Started modem request: %s", mm_proxy.request)
         self.view.show_modem_response()
@@ -672,7 +675,9 @@ class PPMProviderAssistant(PPMObject):
                     self.providers_initialized = self.country_code
                 self._fill_provider_liststore_by_country_code(self.country_code)
         elif self.assistant.get_current_page() == self.PAGE_CONFIRM:
-            self.label_country.set_text(self.country_code)
+            country = self.controller.get_country_by_code(self.country_code)
+            label = country if country else self.country_code
+            self.label_country.set_text(label)
             self.label_provider.set_text(self.provider)
 
     def on_treeview_countries_changed(self, obj):

@@ -47,6 +47,8 @@ class ModemManagerProxy(GObject.GObject):
     MM_DBUS_INTERFACE_MODEM_GSM_CARD='org.freedesktop.ModemManager.Modem.Gsm.Card'
     MM_DBUS_INTERFACE_MODEM_GSM_USSD='org.freedesktop.ModemManager.Modem.Gsm.Ussd'
     MM_DBUS_TIMEOUT = 5000
+    MM_DBUS_FLAGS = (Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES |
+                     Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS)
 
     __gsignals__ = {
         # Emitted when a request to MM starts
@@ -114,7 +116,7 @@ class ModemManagerProxy(GObject.GObject):
     def get_modems(self):
         modems = []
         mm = Gio.DBusProxy.new_sync(self.bus,
-                                    Gio.DBusProxyFlags.NONE,
+                                    self.MM_DBUS_FLAGS,
                                     None,
                                     self.MM_DBUS_SERVICE,
                                     self.MM_DBUS_OBJECT_MODEM_MANAGER,
@@ -127,12 +129,12 @@ class ModemManagerProxy(GObject.GObject):
 
     def get_imsi(self):
         card = Gio.DBusProxy.new_sync(self.bus,
-                                    Gio.DBusProxyFlags.NONE,
-                                    None,
-                                    self.MM_DBUS_SERVICE,
-                                    self.modem,
-                                    self.MM_DBUS_INTERFACE_MODEM_GSM_CARD,
-                                    None)
+                                      self.MM_DBUS_FLAGS,
+                                      None,
+                                      self.MM_DBUS_SERVICE,
+                                      self.modem,
+                                      self.MM_DBUS_INTERFACE_MODEM_GSM_CARD,
+                                      None)
         try:
             return card.GetImsi()
         except Exception as msg:
@@ -147,7 +149,7 @@ class ModemManagerProxy(GObject.GObject):
     @mm_request
     def ussd_initiate(self, command, reply_func=None, error_func=None):
         ussd = Gio.DBusProxy.new_sync(self.bus,
-                                      Gio.DBusProxyFlags.NONE,
+                                      self.MM_DBUS_FLAGS,
                                       None,
                                       self.MM_DBUS_SERVICE,
                                       self.modem,
@@ -160,7 +162,7 @@ class ModemManagerProxy(GObject.GObject):
     @mm_request
     def _modem__enable(self, enable, reply_func=None, error_func=None):
         ussd = Gio.DBusProxy.new_sync(self.bus,
-                                      Gio.DBusProxyFlags.NONE,
+                                      self.MM_DBUS_FLAGS,
                                       None,
                                       self.MM_DBUS_SERVICE,
                                       self.modem,

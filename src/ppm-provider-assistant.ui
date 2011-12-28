@@ -33,7 +33,7 @@
     <child>
       <object class="GtkLabel" id="label1">
         <property name="visible">True</property>
-        <property name="label" translatable="yes">Prepaid Manager couldn't autodetect your mobile broadband provider. The following pages will guide you through the process of setting it up.</property>
+        <property name="label" translatable="yes">The following pages will guide you through the process of setting it you mobile broadband provider.</property>
         <property name="wrap">True</property>
       </object>
       <packing>

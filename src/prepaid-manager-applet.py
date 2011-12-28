@@ -121,18 +121,27 @@ class PPMController(GObject.GObject):
         """
         Given the imsi, determine the provider based on that information
         from providerdb, request user input where ncessary
+
+        @param imsi: If given use this to dertimine the mcc and mnc
+            and from that the provider. If set to C{None} request all
+            information from the user.
+        @type imsi: C{str}
         """
-        imsi = imsi or self.imsi
-        mcc, mnc = self._imsi_to_network_id(imsi)
-        self.providers = self.providerdb.get_providers(mcc, mnc)
-        if self.providers:
-            if len(self.providers) > 1:
-                # More than one provider matching mcc/mnc, let user select
-                self.view.show_provider_assistant(self.providers)
-            else:
-                self.set_provider(self.providers[0])
+        self.providers = []
+        if imsi:
+            mcc, mnc = self._imsi_to_network_id(imsi)
+            self.providers = self.providerdb.get_providers(mcc, mnc)
+
+        if len(self.providers) == 1:
+            self.set_provider(self.providers[0])
+        elif len(self.providers):
+            # More than one provider matching mcc/mnc, let user select
+            self.view.show_provider_assistant(self.providers)
         else:
-            self.view.show_provider_unknown(mcc, mnc)
+            if imsi:
+                self.view.show_provider_unknown(mcc, mnc)
+            else:
+                self.view.show_provider_assistant(None)
 
     def _get_account_from_accountdb(self, imsi):
         """
@@ -387,7 +396,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.controller.fetch_balance()
 
     def on_provider_change_clicked(self, dummy):
-        self.controller.get_provider_interactive()
+        self.controller.get_provider_interactive(imsi=None)
 
     def on_entry_code_insert(self, entry):
         cur_len =  entry.get_text_length()

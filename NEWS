@@ -1,3 +1,11 @@
+===============
+Version 0.0.3.1
+===============
+* Provider selections fixes
+* Add 'change' button to allow to reconfigure current provider
+* Reschedule modem setup on modem errors
+* Switch to xz tarballs
+
 ==============
 Version 0.0.3
 ==============

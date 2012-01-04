@@ -117,21 +117,31 @@ class PPMController(GObject.GObject):
         mnc = imsi[3:5]
         return (mcc, mnc)
 
-    def _get_provider_interactive(self, imsi):
+    def get_provider_interactive(self, imsi=None):
         """
         Given the imsi, determine the provider based on that information
         from providerdb, request user input where ncessary
+
+        @param imsi: If given use this to dertimine the mcc and mnc
+            and from that the provider. If set to C{None} request all
+            information from the user.
+        @type imsi: C{str}
         """
-        mcc, mnc = self._imsi_to_network_id(imsi)
-        self.providers = self.providerdb.get_providers(mcc, mnc)
-        if self.providers:
-            if len(self.providers) > 1:
-                # More than one provider matching mcc/mnc, let user select
-                self.view.show_provider_assistant(self.providers)
-            else:
-                self.set_provider(self.providers[0])
+        self.providers = []
+        if imsi:
+            mcc, mnc = self._imsi_to_network_id(imsi)
+            self.providers = self.providerdb.get_providers(mcc, mnc)
+
+        if len(self.providers) == 1:
+            self.set_provider(self.providers[0])
+        elif len(self.providers):
+            # More than one provider matching mcc/mnc, let user select
+            self.view.show_provider_assistant(self.providers)
         else:
-            self.view.show_provider_unknown(mcc, mnc)
+            if imsi:
+                self.view.show_provider_unknown(mcc, mnc)
+            else:
+                self.view.show_provider_assistant(None)
 
     def _get_account_from_accountdb(self, imsi):
         """
@@ -175,7 +185,7 @@ class PPMController(GObject.GObject):
         else:
             # Account not known yet, get provider interactively
             self.account = None
-            self._get_provider_interactive(self.imsi)
+            self.get_provider_interactive(self.imsi)
 
         # Everything worked out, disable the timer.
         return False
@@ -217,6 +227,9 @@ class PPMController(GObject.GObject):
     def get_provider_providers(self, country_code):
         return self.providerdb.get_providers_by_code(country_code)
 
+    def get_country_by_code(self, code):
+        return self.providerdb.get_country_by_code(code)
+
     def on_mm_request_started(self, obj, mm_proxy):
         logging.debug("Started modem request: %s", mm_proxy.request)
         self.view.show_modem_response()
@@ -247,6 +260,8 @@ class PPMController(GObject.GObject):
     def on_modem_error(self, e):
         self.view.show_modem_error(e.msg)
         logging.error(e.msg)
+        # The modem might have disconnected. So reschedule the setup
+        self.schedule_setup()
 
     def on_provider_changed(self, obj, provider):
         """Act on provider-changed signal"""
@@ -384,9 +399,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.controller.fetch_balance()
 
     def on_provider_change_clicked(self, dummy):
-        # FIXME: allow to select provider
-        # and communicate the change to the controller
-        raise NotImplementedError
+        self.controller.get_provider_interactive(imsi=None)
 
     def on_entry_code_insert(self, entry):
         cur_len =  entry.get_text_length()
@@ -569,6 +582,7 @@ class PPMProviderAssistant(PPMObject):
         self.country_code = None
         self.provider = None
         self.possible_providers = None
+        self.providers_initialized = False
 
     def _get_current_country_from_locale(self):
         (l, enc) = locale.getlocale()
@@ -611,6 +625,7 @@ class PPMProviderAssistant(PPMObject):
     def show(self, providers=None):
         self.possible_providers = providers
         self.provider = None
+        self.providers_initialized = False
 
         if not self.possible_providers:
             # No list of possible providers so allow to select the country first
@@ -647,28 +662,39 @@ class PPMProviderAssistant(PPMObject):
     def on_ppm_provider_assistant_prepare(self, obj, page):
         if self.assistant.get_current_page() == self.PAGE_PROVIDERS:
             if self.possible_providers:
+                if self.providers_initialized:
+                    return
+                else:
+                    self.providers_initialized = True
                 self._fill_provider_liststore_by_providers()
+                self.providers_intialized = True
             else:
+                if self.country_code == self.providers_initialized:
+                    return
+                else:
+                    self.providers_initialized = self.country_code
                 self._fill_provider_liststore_by_country_code(self.country_code)
         elif self.assistant.get_current_page() == self.PAGE_CONFIRM:
-            self.label_country.set_text(self.country_code)
+            country = self.controller.get_country_by_code(self.country_code)
+            label = country if country else self.country_code
+            self.label_country.set_text(label)
             self.label_provider.set_text(self.provider)
 
     def on_treeview_countries_changed(self, obj):
-        self.assistant.set_page_complete(self.vbox_countries, True)
         selection = self.treeview_countries.get_selection()
         (model, iter) = selection.get_selected()
         if not iter:
             return
         self.country_code = model.get_value(iter, 1)
+        self.assistant.set_page_complete(self.vbox_countries, True)
 
     def on_treeview_providers_changed(self, obj):
-        self.assistant.set_page_complete(self.vbox_providers, True)
         selection = self.treeview_providers.get_selection()
         (model, iter) = selection.get_selected()
         if not iter:
             return
         self.provider = model.get_value(iter, 0)
+        self.assistant.set_page_complete(self.vbox_providers, True)
 
     def on_ppm_provider_assistant_close(self, obj):
         logging.debug("Selected: %s  %s", self.provider, self.country_code)

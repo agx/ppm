@@ -133,6 +133,13 @@ class ProviderDB(object):
         for r in searcher(self.tree):
             yield r.attrib['code']
 
+    def get_country_by_code(self, code):
+        """Given a country code return it's name"""
+        try:
+            return self.countries[code]
+        except KeyError:
+            return None
+
     def get_countries(self):
         for code in self.get_country_codes():
             try:

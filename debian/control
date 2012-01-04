@@ -27,11 +27,9 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
  mobile-broadband-provider-info (>= 20110424-1),
  modemmanager (>= 0.4+git.20110124t203624.00b6cce),
  python-lxml
-Description: GNOME Prepaid Manager
- GNOME prepaid manager aims to ease the handling of mobile internet
- connections using GSM mobile prepaid cards on the GNOME Desktop. Such a SIM
- card can either be in a mobile phone used as a modem, a usb 3g module (usb
- surf stick) or used by the built in 3G chipset in your laptop/netbook.
+Description: Check and top up the balance of GSM mobile prepaid SIM cards
+ GNOME Prepaid-manager-applet is an applet for the GNOME Desktop that
+ allows you to check and top up the balance of GSM mobile prepaid SIM cards.
  .
- It currently supports USSD messges and uses ModemManager to talk to your GSM
- chipset.
+ It uses ModemManager to talk to the modem and mobile-broadband-provider-info
+ to determine the necessary USSD codes for your provider.

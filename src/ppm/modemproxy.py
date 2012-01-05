@@ -20,6 +20,7 @@ from gi.repository import GObject
 from gi.repository import GLib
 from gi.repository import Gio
 
+import re
 
 class ModemError(Exception):
     def __init__(self, msg):
@@ -49,6 +50,8 @@ class ModemManagerProxy(GObject.GObject):
     MM_DBUS_TIMEOUT = 5000
     MM_DBUS_FLAGS = (Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES |
                      Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS)
+    # IMSIs are 14 or 15 digits
+    IMSI_RE = r'\d{14,15}'
 
     __gsignals__ = {
         # Emitted when a request to MM starts
@@ -136,9 +139,12 @@ class ModemManagerProxy(GObject.GObject):
                                       self.MM_DBUS_INTERFACE_MODEM_GSM_CARD,
                                       None)
         try:
-            return card.GetImsi()
+            imsi = card.GetImsi()
         except Exception as msg:
             raise ModemError("Getting IMSI failed: %s" % msg)
+        if not re.match(self.IMSI_RE, imsi):
+            raise ModemError("%s is not a valid imsi" % imsi)
+        return imsi
 
     def get_network_id(self):
         imsi = self.get_imsi()

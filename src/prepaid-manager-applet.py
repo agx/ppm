@@ -793,6 +793,7 @@ def main(args):
 
     logging.basicConfig(level=log_level,
                         format='ppm: %(levelname)s: %(message)s')
+    logging.debug("%s %s", ppm.prgname, ppm.version)
 
     setup_i18n()
     setup_prgname()

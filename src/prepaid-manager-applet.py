@@ -31,6 +31,8 @@ from ppm.modemproxy import (ModemManagerProxy, ModemError)
 from ppm.providerdb import ProviderDB
 from ppm.accountdb import AccountDB
 
+_ = None
+
 # The controller receives input and initiates a response by making calls on model
 # objects. A controller accepts input from the user and instructs the model and
 # view to perform actions based on that input.
@@ -748,6 +750,7 @@ class PPMProviderInfoMissingDialog(object):
 
 
 def setup_i18n():
+    global _
     locale.setlocale(locale.LC_ALL, '')
     gettext.install(ppm.gettext_app, ppm.gettext_dir)
     gettext.bindtextdomain(ppm.gettext_app, ppm.gettext_dir)

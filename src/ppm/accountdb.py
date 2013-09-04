@@ -18,8 +18,6 @@ from gi.repository import Gio
 from gi.repository import GObject
 import logging
 
-from provider import Provider
-
 class Account(GObject.GObject):
     identifier = GObject.property(type=str,
                                   nick='account identifier',

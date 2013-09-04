@@ -28,7 +28,6 @@ import time
 
 import ppm
 from ppm.modemproxy import (ModemManagerProxy, ModemError)
-from ppm.provider import Provider
 from ppm.providerdb import ProviderDB
 from ppm.accountdb import AccountDB
 

@@ -194,7 +194,11 @@ class PPMController(GObject.GObject):
         self.mm = ModemManagerProxy()
         self._connect_mm_signals()
 
-        modems = self.mm.get_modems()
+        try:
+            modems = self.mm.get_modems()
+        except ModemError as e:
+            logging.error("%s" % e.msg)
+            modems = None
         if modems:
             modem = modems[0] # FIXME: handle multiple modems
             logging.debug("Using modem %s" % modem)

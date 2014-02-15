@@ -123,7 +123,10 @@ class ModemManagerProxy(GObject.GObject):
                                     self.MM_DBUS_OBJECT_MODEM_MANAGER,
                                     self.MM_DBUS_INTERFACE_MODEM_MANAGER,
                                     None)
-        ret = mm.EnumerateDevices()
+        try:
+            ret = mm.EnumerateDevices()
+        except Exception as e:
+            raise ModemError("Failed to list modems: %s" % e)
         for modem in ret:
             modems.append(modem)
         return modems

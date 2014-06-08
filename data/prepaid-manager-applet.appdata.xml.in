@@ -2,7 +2,7 @@
 <!-- Copyright 2014 Guido Günther <agx@sigxcpu.org> -->
 <application>
   <id type="desktop">prepaid-manager-applet.desktop</id>
-  <metadata_licence>CC-BY-SA-3.0</metadata_licence>
+  <metadata_license>CC-BY-SA-3.0</metadata_license>
   <description>
     <_p>
       GNOME Prepaid-manager-applet is an applet for the GNOME Desktop that
@@ -14,8 +14,8 @@
     </_p>
   </description>
   <screenshots>
-    <screenshot type="default" width="337" height="150">https://honk.sigxcpu.org/piki/projects/ppm/check.png</screenshot>
-    <screenshot type="default" width="337" height="150">https://honk.sigxcpu.org/piki/projects/ppm/topup.png</screenshot>
+    <screenshot type="default" width="411" height="183">https://honk.sigxcpu.org/piki/projects/ppm/check.png</screenshot>
+    <screenshot width="411" height="183">https://honk.sigxcpu.org/piki/projects/ppm/topup.png</screenshot>
   </screenshots>
   <url type="homepage">https://honk.sigxcpu.org/piki/projects/ppm/</url>
   <updatecontact>agx_at_sigxcpu.org</updatecontact>

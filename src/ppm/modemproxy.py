@@ -39,12 +39,14 @@ class ModemManagerProxy(GObject.GObject):
     @type modem: string
     """
 
-    MM_DBUS_SERVICE='org.freedesktop.ModemManager'
-    MM_DBUS_INTERFACE_MODEM_MANAGER='org.freedesktop.ModemManager'
-    MM_DBUS_OBJECT_MODEM_MANAGER='/org/freedesktop/ModemManager'
-    MM_DBUS_INTERFACE_MODEM='org.freedesktop.ModemManager.Modem'
-    MM_DBUS_INTERFACE_MODEM_GSM_CARD='org.freedesktop.ModemManager.Modem.Gsm.Card'
-    MM_DBUS_INTERFACE_MODEM_GSM_USSD='org.freedesktop.ModemManager.Modem.Gsm.Ussd'
+    DBUS_INTERFACE_PROPERTIES='org.freedesktop.DBus.Properties'
+    DBUS_INTERFACE_OBJECT_MANAGER='org.freedesktop.DBus.ObjectManager'
+    MM_DBUS_SERVICE='org.freedesktop.ModemManager1'
+    MM_DBUS_INTERFACE_MODEM_MANAGER='org.freedesktop.ModemManager1'
+    MM_DBUS_OBJECT_MODEM_MANAGER='/org/freedesktop/ModemManager1'
+    MM_DBUS_INTERFACE_MODEM='org.freedesktop.ModemManager1.Modem'
+    MM_DBUS_INTERFACE_SIM='org.freedesktop.ModemManager1.Sim'
+    MM_DBUS_INTERFACE_MODEM_GSM_USSD='org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd'
     MM_DBUS_TIMEOUT = 5000
     MM_DBUS_FLAGS = (Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES |
                      Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS)
@@ -68,6 +70,22 @@ class ModemManagerProxy(GObject.GObject):
         self.error_func = None
         self.modem = None
         self.obj = None
+        self.objs = None
+
+    def get_objects(self):
+        mm = Gio.DBusProxy.new_sync(self.bus,
+                                    self.MM_DBUS_FLAGS,
+                                    None,
+                                    self.MM_DBUS_SERVICE,
+                                    self.MM_DBUS_OBJECT_MODEM_MANAGER,
+                                    self.DBUS_INTERFACE_OBJECT_MANAGER,
+                                    None)
+        self.objs = mm.GetManagedObjects()
+
+    def objects(self):
+        if self.objs is None:
+            self.get_objects()
+        return self.objs
 
     def set_modem(self, modem):
         self.modem = modem
@@ -116,19 +134,10 @@ class ModemManagerProxy(GObject.GObject):
 
     def get_modems(self):
         modems = []
-        mm = Gio.DBusProxy.new_sync(self.bus,
-                                    self.MM_DBUS_FLAGS,
-                                    None,
-                                    self.MM_DBUS_SERVICE,
-                                    self.MM_DBUS_OBJECT_MODEM_MANAGER,
-                                    self.MM_DBUS_INTERFACE_MODEM_MANAGER,
-                                    None)
-        try:
-            ret = mm.EnumerateDevices()
-        except Exception as e:
-            raise ModemError("Failed to list modems: %s" % e)
-        for modem in ret:
-            modems.append(modem)
+        self.get_objects()
+        for path, obj in self.objects().iteritems():
+            if self.MM_DBUS_INTERFACE_MODEM in obj:
+                modems.append(path)
         return modems
 
     def get_imsi(self):
@@ -136,11 +145,11 @@ class ModemManagerProxy(GObject.GObject):
                                       self.MM_DBUS_FLAGS,
                                       None,
                                       self.MM_DBUS_SERVICE,
-                                      self.modem,
-                                      self.MM_DBUS_INTERFACE_MODEM_GSM_CARD,
+                                      self.objects()[self.modem][self.MM_DBUS_INTERFACE_MODEM]['Sim'],
+                                      self.DBUS_INTERFACE_PROPERTIES,
                                       None)
         try:
-            imsi = card.GetImsi()
+            return card.Get('(ss)', self.MM_DBUS_INTERFACE_SIM, 'Imsi')
         except Exception as msg:
             raise ModemError("Getting IMSI failed: %s" % msg)
         if not re.match(self.IMSI_RE, imsi):

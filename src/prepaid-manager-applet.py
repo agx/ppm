@@ -16,8 +16,10 @@
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import gettext
+import gi
 from gi.repository import GObject
 from gi.repository import GLib
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 import locale

@@ -20,15 +20,16 @@ Build
 -----
 To build ppm use:
 
-  ./configure
-  make
+  meson . _build
+  ninja -C _build
 
 Running
 -------
-If you don't want to install ppm on you system you can run it from the source
-tree:
+Running is currently a bit cumbersome due to the preprocessed python
+files so:
 
-   src/prepaid-manager-applet.py
+  ninja -C _build install
+  GSETTINGS_SCHEMA_DIR=_build/data _build/src/prepaid-manager-applet
 
 Project Page
 ------------

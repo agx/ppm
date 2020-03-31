@@ -308,30 +308,6 @@ class PPMController(Gtk.Application):
         self.view.update_account_balance_information(balance, timestamp)
 
 
-class PPMObject(object):
-    """Dialog or window constructed via a GtkBuilder"""
-    def __init__(self, view, ui):
-        if view:
-            self.controller = view.controller
-        else:
-            self.controller = None
-        self._load_ui(ui)
-
-    def _load_ui(self, ui):
-        """Load the user interfade description"""
-        self.builder = Gtk.Builder()
-        self.builder.set_translation_domain(ppm.gettext_app)
-        self.builder.add_from_resource('/org/gnome/PrepaidManager/ui/%s.ui' % ui)
-        self.builder.connect_signals(self)
-
-    def _add_elem(self, name):
-        self.__dict__[name] = self.builder.get_object(name)
-
-    def _add_elements(self, *args):
-        for name in args:
-            self._add_elem(name)
-
-
 # View
 @Gtk.Template.from_resource('/org/gnome/PrepaidManager/ui/ppm.ui')
 class PPMDialog(Gtk.ApplicationWindow):
@@ -583,25 +559,29 @@ class PPMNoModemFoundInfoBar(PPMInfoBar):
         self.controller.schedule_setup()
 
 
-class PPMProviderAssistant(PPMObject):
+@Gtk.Template.from_resource('/org/gnome/PrepaidManager/ui/ppm-provider-assistant.ui')
+class PPMProviderAssistant(Gtk.Assistant):
     PAGE_INTRO, PAGE_COUNTRIES, PAGE_PROVIDERS, PAGE_CONFIRM = list(range(0, 4))
 
+    __gtype_name__ = "PPMProviderAssistant"
+
+    vbox_countries = Gtk.Template.Child()
+    treeview_countries = Gtk.Template.Child()
+    vbox_providers = Gtk.Template.Child()
+    treeview_providers = Gtk.Template.Child()
+    liststore_providers = Gtk.Template.Child()
+    label_country = Gtk.Template.Child()
+    label_provider = Gtk.Template.Child()
+
     def __init__(self, main_dialog):
-        PPMObject.__init__(self, main_dialog, "ppm-provider-assistant")
-        self.assistant = self.builder.get_object("ppm_provider_assistant")
-        self._add_elements("vbox_countries",
-                           "treeview_countries",
-                           "vbox_providers",
-                           "treeview_providers",
-                           "liststore_providers",
-                           "label_country",
-                           "label_provider")
-        self.assistant.set_transient_for(main_dialog)
+        Gtk.Assistant.__init__(self)
+        self.set_transient_for(main_dialog)
         self.liststore_countries = None
         self.country_code = None
         self.provider = None
         self.possible_providers = None
         self.providers_initialized = False
+        self.controller = Gio.Application.get_default()
 
     def _get_current_country_from_locale(self):
         (l, enc) = locale.getlocale()
@@ -614,13 +594,13 @@ class PPMProviderAssistant(PPMObject):
         treeselection = self.treeview_countries.get_selection()
         treeselection.select_path(path)
         self.treeview_countries.scroll_to_cell(path)
-        self.assistant.set_page_complete(self.vbox_countries, True)
+        self.set_page_complete(self.vbox_countries, True)
 
     def _fill_liststore_countries(self):
         """Fille the countries liststore with all known countries"""
         lcode = self._get_current_country_from_locale()
         if not self.liststore_countries:
-            self.liststore_countries = self.builder.get_object("liststore_countries")
+            self.liststore_countries = self.treeview_countries.get_model()
             for (country, code) in self.controller.get_provider_countries():
                 if country is None:
                     country = code
@@ -648,17 +628,18 @@ class PPMProviderAssistant(PPMObject):
         if not self.possible_providers:
             # No list of possible providers so allow to select the country first
             self._fill_liststore_countries()
-            self.assistant.set_forward_page_func(self._all_pages_func, None)
+            self.set_forward_page_func(self._all_pages_func, None)
         else:
             # List of possible providers given, all from the same country
             self.country_code = self.possible_providers[0].country
-            self.assistant.set_forward_page_func(self._providers_only_page_func,
+            self.set_forward_page_func(self._providers_only_page_func,
                                                  None)
-        self.assistant.show()
+        Gtk.Widget.show(self)
 
     def close(self):
-        self.assistant.hide()
+        self.hide()
 
+    @Gtk.Template.Callback("on_ppm_provider_assistant_cancel")
     def on_ppm_provider_assistant_cancel(self, obj):
         logging.debug("Assistant canceled.")
         self.close()
@@ -677,8 +658,9 @@ class PPMProviderAssistant(PPMObject):
                                                0,
                                                provider.name)
 
+    @Gtk.Template.Callback("on_ppm_provider_assistant_prepare")
     def on_ppm_provider_assistant_prepare(self, obj, page):
-        if self.assistant.get_current_page() == self.PAGE_PROVIDERS:
+        if self.get_current_page() == self.PAGE_PROVIDERS:
             if self.possible_providers:
                 if self.providers_initialized:
                     return
@@ -692,28 +674,31 @@ class PPMProviderAssistant(PPMObject):
                 else:
                     self.providers_initialized = self.country_code
                 self._fill_provider_liststore_by_country_code(self.country_code)
-        elif self.assistant.get_current_page() == self.PAGE_CONFIRM:
+        elif self.get_current_page() == self.PAGE_CONFIRM:
             country = self.controller.get_country_by_code(self.country_code)
             label = country if country else self.country_code
             self.label_country.set_text(label)
             self.label_provider.set_text(self.provider)
 
+    @Gtk.Template.Callback("on_treeview_countries_changed")
     def on_treeview_countries_changed(self, obj):
         selection = self.treeview_countries.get_selection()
         (model, iter) = selection.get_selected()
         if not iter:
             return
         self.country_code = model.get_value(iter, 1)
-        self.assistant.set_page_complete(self.vbox_countries, True)
+        self.set_page_complete(self.vbox_countries, True)
 
+    @Gtk.Template.Callback("on_treeview_providers_changed")
     def on_treeview_providers_changed(self, obj):
         selection = self.treeview_providers.get_selection()
         (model, iter) = selection.get_selected()
         if not iter:
             return
         self.provider = model.get_value(iter, 0)
-        self.assistant.set_page_complete(self.vbox_providers, True)
+        self.set_page_complete(self.vbox_providers, True)
 
+    @Gtk.Template.Callback("on_ppm_provider_assistant_close")
     def on_ppm_provider_assistant_close(self, obj):
         logging.debug("Selected: %s  %s", self.provider, self.country_code)
         self.close()

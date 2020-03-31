@@ -1,6 +1,6 @@
 desktop_file = i18n.merge_file(
-  input: 'prepaid-manager-applet.desktop.in',
-  output: 'prepaid-manager-applet.desktop',
+  input: app_id + '.desktop.in',
+  output: app_id + '.desktop',
   type: 'desktop',
   po_dir: '../po',
   install: true,

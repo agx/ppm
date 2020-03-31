@@ -1,5 +1,6 @@
 # Paths for prepaid-manager-applet
 
+app_id      = '@APP_ID@'
 gettext_app = '@PACKAGE@'
 gettext_dir = '@GETTEXTDIR@'
 data_dir    = '@PKGDATADIR@'

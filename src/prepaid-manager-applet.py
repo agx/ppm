@@ -779,8 +779,8 @@ def setup_i18n():
 
 def setup_prgname():
     """Set the prgname since gnome-shell is application based"""
-    GLib.set_prgname(ppm.prgname)
-    Gdk.set_program_class(ppm.prgname)
+    GLib.set_prgname(ppm.app_id)
+    Gdk.set_program_class(ppm.app_id)
     GLib.set_application_name(_("Prepaid Manager"))
 
 
@@ -797,7 +797,7 @@ def main(args):
 
     logging.basicConfig(level=log_level,
                         format='ppm: %(levelname)s: %(message)s')
-    logging.debug("%s %s", ppm.prgname, ppm.version)
+    logging.debug("%s %s", ppm.app_id, ppm.version)
 
     setup_i18n()
     setup_prgname()

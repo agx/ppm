@@ -9,6 +9,7 @@ sources = [
 install_data(sources, install_dir: pythondir)
 
 conf = configuration_data()
+conf.set('APP_ID', app_id)
 conf.set('VERSION', meson.project_version())
 conf.set('PACKAGE', package)
 conf.set('PYLIBDIR', pkgdatadir)

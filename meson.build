@@ -3,6 +3,7 @@ project('ppm',
   meson_version: '>= 0.49.0',
 )
 
+app_id = 'org.gnome.PrepaidManager'
 package = 'prepaid-manager-applet'
 prefix = get_option('prefix')
 datadir = join_paths(prefix, get_option('datadir'))

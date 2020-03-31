@@ -455,8 +455,8 @@ class PPMDialog(GObject.GObject, PPMObject):
 
     def show_modem_error(self, msg):
         dialog = Gtk.MessageDialog(parent=self.dialog,
-                                   flags=Gtk.DialogFlags.MODAL |
-                                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                   modal=True,
+                                   destroy_with_parent=True,
                                    message_type=Gtk.MessageType.ERROR,
                                    buttons=Gtk.ButtonsType.OK)
         dialog.set_markup("Modem error: %s" % msg)
@@ -477,8 +477,8 @@ class PPMDialog(GObject.GObject, PPMObject):
         """show generic error"""
         logging.debug(msg)
         error = Gtk.MessageDialog(parent=self.dialog,
-                                  flags=Gtk.DialogFlags.MODAL |
-                                        Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                  modal=True,
+                                  destroy_with_parent=True,
                                   message_type=Gtk.MessageType.ERROR,
                                   buttons=Gtk.ButtonsType.OK)
         error.set_markup(msg)
@@ -722,8 +722,8 @@ class PPMProviderInfoMissingDialog(object):
 
     def __init__(self, main_dialog):
         self.dialog = Gtk.MessageDialog(parent=main_dialog.dialog,
-                                        flags=Gtk.DialogFlags.MODAL |
-                                              Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                        modal=True,
+                                        destroy_with_parent=True,
                                         message_type=Gtk.MessageType.INFO,
                                         buttons=Gtk.ButtonsType.OK)
         self.messages = {

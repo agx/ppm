@@ -745,7 +745,7 @@ class PPMProviderInfoMissingDialog(object):
         msg = self.messages['balance_info_missing'] % provider.name
         self._run(msg)
 
-    def top_upinfo_missing(self, provider):
+    def top_up_info_missing(self, provider):
         msg = self.messages['top_up_info_missing'] % provider.name
         self._run(msg)
 

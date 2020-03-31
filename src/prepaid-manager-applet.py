@@ -19,13 +19,6 @@ from builtins import str
 from builtins import range
 from past.utils import old_div
 from builtins import object
-import gettext
-import gi
-from gi.repository import GObject
-from gi.repository import GLib
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
-from gi.repository import Gdk
 import locale
 import logging
 import os
@@ -37,7 +30,17 @@ from ppm.modemproxy import (ModemManagerProxy, ModemError)
 from ppm.providerdb import ProviderDB
 from ppm.accountdb import AccountDB
 
+import gettext
+import gi
+from gi.repository import GObject
+from gi.repository import GLib
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk  # noqa: E402
+from gi.repository import Gdk  # noqa: E402
+
+
 _ = None
+
 
 # The controller receives input and initiates a response by making calls on model
 # objects. A controller accepts input from the user and instructs the model and
@@ -57,7 +60,7 @@ class PPMController(GObject.GObject):
         # Emitted when the provider changed
         'provider-changed': (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
-        }
+    }
 
     def _connect_mm_signals(self):
         self.mm.connect('request-started', self.on_mm_request_started)
@@ -79,8 +82,8 @@ class PPMController(GObject.GObject):
     def fetch_balance(self):
         """Fetch the current account balance from the  network"""
         if not self.provider.fetch_balance(self.mm,
-                                        reply_func=self.on_balance_info_fetched,
-                                        error_func=self.on_modem_error):
+                                           reply_func=self.on_balance_info_fetched,
+                                           error_func=self.on_modem_error):
             self.view.show_provider_balance_info_missing(self.provider)
             logging.error("No idea how to fetch account information for "
                           "%s in %s.", self.provider.name, self.provider.country)
@@ -177,7 +180,7 @@ class PPMController(GObject.GObject):
 
         try:
             account = self._get_account_from_accountdb(self.imsi)
-        except:
+        except Exception:
             # Fetching account from the DB failed, so start over
             account = None
 
@@ -206,7 +209,7 @@ class PPMController(GObject.GObject):
             logging.error("%s" % e.msg)
             modems = None
         if modems:
-            modem = modems[0] # FIXME: handle multiple modems
+            modem = modems[0]  # FIXME: handle multiple modems
             logging.debug("Using modem %s" % modem)
             self.mm.set_modem(modem)
             GLib.timeout_add(500, self.init_account_and_provider)
@@ -286,8 +289,8 @@ class PPMController(GObject.GObject):
             self.account.update_provider(provider)
             if self.account.props.timestamp:
                 self.view.update_account_balance_information(
-                                    self.account.balance,
-                                    self.account.timestamp)
+                    self.account.balance,
+                    self.account.timestamp)
 
     def on_balance_info_changed(self, obj, balance):
         """Act on balance-info-changed signal"""
@@ -326,19 +329,20 @@ class PPMObject(object):
         for name in args:
             self._add_elem(name)
 
+
 # View
 class PPMDialog(GObject.GObject, PPMObject):
 
     def _init_about_dialog(self):
         self.about_dialog = Gtk.AboutDialog(
-                                authors = ["Guido Günther <agx@sigxcpu.org>"],
-                                website = "https://honk.sigxcpu.org/piki/projects/ppm/",
-                                website_label = _("Website"),
-                                comments = _("Manage balance of prepaid GSM SIM cards"),
-                                wrap_license = True,
-                                version = ppm.version,
-                                logo_icon_name = 'ppm',
-                                license_type = Gtk.License.GPL_3_0)
+            authors=["Guido Günther <agx@sigxcpu.org>"],
+            website="https://honk.sigxcpu.org/piki/projects/ppm/",
+            website_label=_("Website"),
+            comments=_("Manage balance of prepaid GSM SIM cards"),
+            wrap_license=True,
+            version=ppm.version,
+            logo_icon_name='ppm',
+            license_type=Gtk.License.GPL_3_0)
 
     def _init_subdialogs(self):
         """Init dialogs shown from the main window"""
@@ -410,7 +414,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.controller.get_provider_interactive(imsi=None)
 
     def on_entry_code_insert(self, entry):
-        cur_len =  entry.get_text_length()
+        cur_len = entry.get_text_length()
         sensitive = True
 
         if self.code_len > 0:
@@ -429,7 +433,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         placeholder = ''
         self.code_len = len
         if len:
-            placeholder = "".join([ str(x)[-1] for x in range(1, len+1) ])
+            placeholder = "".join([str(x)[-1] for x in range(1, len + 1)])
         self.entry_code.set_placeholder_text(placeholder)
 
     def update_account_balance_information(self, balance_text, timestamp):
@@ -524,7 +528,7 @@ class PPMEnableModemInfoBar(PPMInfoBar):
         self.msg_label.show()
         self.info_bar.connect("response", self.on_enable_clicked)
 
-    def on_enable_clicked(self, info_bar,  response_id):
+    def on_enable_clicked(self, info_bar, response_id):
         self.hide()
         self.controller.enable_modem()
 
@@ -566,7 +570,7 @@ class PPMNoModemFoundInfoBar(PPMInfoBar):
         self.info_bar.add_button(_("Try again"), Gtk.ResponseType.OK)
         self.info_bar.connect("response", self.on_try_again_clicked)
 
-    def on_try_again_clicked(self, info_bar,  response_id):
+    def on_try_again_clicked(self, info_bar, response_id):
         logging.debug("Rescheduling modem setup")
         self.hide()
         self.controller.schedule_setup()
@@ -609,8 +613,7 @@ class PPMProviderAssistant(PPMObject):
         """Fille the countries liststore with all known countries"""
         lcode = self._get_current_country_from_locale()
         if not self.liststore_countries:
-            self.liststore_countries = self.builder.get_object(
-                                                         "liststore_countries")
+            self.liststore_countries = self.builder.get_object("liststore_countries")
             for (country, code) in self.controller.get_provider_countries():
                 if country is None:
                     country = code
@@ -625,10 +628,10 @@ class PPMProviderAssistant(PPMObject):
         if current_page < self.PAGE_PROVIDERS:
             return self.PAGE_PROVIDERS
         else:
-            return current_page+1
+            return current_page + 1
 
     def _all_pages_func(self, current_page, user_data):
-        return current_page+1
+        return current_page + 1
 
     def show(self, providers=None):
         self.possible_providers = providers
@@ -728,15 +731,15 @@ class PPMProviderInfoMissingDialog(object):
                                         buttons=Gtk.ButtonsType.OK)
         self.messages = {
             'balance_info_missing':
-                 _("We can't find the information on how to query the "
-                   "account balance from your provider '%s' in our database."),
+            _("We can't find the information on how to query the "
+              "account balance from your provider '%s' in our database."),
             'top_up_info_missing':
-                 _("We can't find the information on how to top up the "
-                   "balance for your provider '%s' in our database."),
+            _("We can't find the information on how to top up the "
+              "balance for your provider '%s' in our database."),
             'provider_unknown':
-                 _("We can't find any information about your provider with "
-                   "mcc '%s' and mnc '%s'.")
-            }
+            _("We can't find any information about your provider with "
+              "mcc '%s' and mnc '%s'.")
+        }
         self.common_msg = _("\n\nYou can go to the %s to learn how to provide that "
                             "information.")
 
@@ -795,10 +798,11 @@ def main(args):
     setup_prgname()
 
     controller = PPMController()
-    main_dialog = PPMDialog(controller)
+    PPMDialog(controller)
     controller.schedule_setup()
 
     Gtk.main()
+
 
 if __name__ == "__main__":
     try:

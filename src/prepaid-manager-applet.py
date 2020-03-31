@@ -349,6 +349,13 @@ class PPMDialog(Gtk.ApplicationWindow):
         self._init_infobars()
         self._init_subdialogs()
 
+    def _add_actions(self):
+        action = Gio.SimpleAction(name='about')
+        action.set_enabled(True)
+        action.connect('activate', self.on_about_activated, None)
+
+        self.add_action(action)
+
     def __init__(self, controller):
         Gtk.ApplicationWindow.__init__(self)
         self.code_len = 0
@@ -356,6 +363,7 @@ class PPMDialog(Gtk.ApplicationWindow):
         # Register ourself to the controller
         self.controller.view = self
 
+        self._add_actions()
         self._setup_ui()
         self.show()
 
@@ -385,8 +393,7 @@ class PPMDialog(Gtk.ApplicationWindow):
         self.clear_top_up_information()
         self.controller.top_up_balance()
 
-    @Gtk.Template.Callback("on_about_activated")
-    def on_about_activated(self, dummy):
+    def on_about_activated(self, *argv):
         self.about_dialog.run()
         self.about_dialog.hide()
 

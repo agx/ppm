@@ -50,7 +50,7 @@ resource._register()
 # The controller receives input and initiates a response by making calls on model
 # objects. A controller accepts input from the user and instructs the model and
 # view to perform actions based on that input.
-class PPMController(GObject.GObject):
+class PPMController(Gtk.Application):
     """
     @ivar providers: the possible providers
     @ivar imsi: the imsi if we could fetch it from the modem
@@ -72,7 +72,7 @@ class PPMController(GObject.GObject):
         self.mm.connect('request-finished', self.on_mm_request_finished)
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        Gtk.Application.__init__(self, application_id=ppm.app_id)
         self.mm = None
         self.imsi = None
         self.provider = None
@@ -306,9 +306,6 @@ class PPMController(GObject.GObject):
             self.account.update_balance(balance, timestamp)
 
         self.view.update_account_balance_information(balance, timestamp)
-
-
-GObject.type_register(PPMController)
 
 
 class PPMObject(object):

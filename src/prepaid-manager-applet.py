@@ -547,7 +547,7 @@ class PPMModemResponseInfoBar(PPMInfoBar):
 
     def hide(self):
         if self.timer:
-            GObject.source_remove(self.timer)
+            GLib.source_remove(self.timer)
             self.timer = None
         PPMInfoBar.hide(self)
 

@@ -21,6 +21,7 @@ from lxml import etree
 
 from . provider import Provider
 
+
 class ProviderDB(object):
     """Proxy to mobile broadband provider database"""
 
@@ -53,7 +54,7 @@ class ProviderDB(object):
         try:
             for line in open(self.country_codes, 'r'):
                 if line[0] != '#':
-                    (code, country) = line.split('\t',2)
+                    (code, country) = line.split('\t', 2)
                     self.__countries[code.lower()] = country.strip()
         except IOError as msg:
             logging.warning("Loading country code database failed: %s" % msg)
@@ -63,8 +64,8 @@ class ProviderDB(object):
         name = provider_elem.xpath("./name")[0].text
         country = provider_elem.getparent().attrib['code']
         gsm_elem = provider_elem.xpath("./gsm")
-        provider = Provider(country = country,
-                            name = name)
+        provider = Provider(country=country,
+                            name=name)
         if gsm_elem:
             self._fill_balance_check_cmd(gsm_elem[0], provider)
             self._fill_top_up_cmd(gsm_elem[0], provider)

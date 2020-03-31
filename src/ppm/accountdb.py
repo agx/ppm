@@ -19,6 +19,7 @@ from gi.repository import Gio
 from gi.repository import GObject
 import logging
 
+
 class Account(GObject.GObject):
     identifier = GObject.property(type=str,
                                   nick='account identifier',
@@ -49,6 +50,7 @@ class Account(GObject.GObject):
             self.props.balance = balance
             self.props.timestamp = timestamp
 
+
 GObject.type_register(Account)
 
 
@@ -77,7 +79,7 @@ class AccountDB(object):
         phone other keys must be possible later
         """
         return '%s%s/' % (self.accounts_path_prefix,
-                         self.imsi_to_identifier(imsi))
+                          self.imsi_to_identifier(imsi))
 
     @classmethod
     def imsi_to_identifier(klass, imsi):
@@ -90,16 +92,16 @@ class AccountDB(object):
 
         path = self._account_path(imsi)
         account = Account()
-        account.props.identifier =  self.imsi_to_identifier(imsi)
+        account.props.identifier = self.imsi_to_identifier(imsi)
         gsettings_account = Gio.Settings(self.PPM_GSETTINGS_ACCOUNT_ID, path)
         gsettings_account.bind('provider', account, 'name',
-                                Gio.SettingsBindFlags.DEFAULT)
+                               Gio.SettingsBindFlags.DEFAULT)
         gsettings_account.bind('country', account, 'code',
-                                Gio.SettingsBindFlags.DEFAULT)
+                               Gio.SettingsBindFlags.DEFAULT)
         gsettings_account.bind('balance', account, 'balance',
-                                Gio.SettingsBindFlags.DEFAULT)
+                               Gio.SettingsBindFlags.DEFAULT)
         gsettings_account.bind('timestamp', account, 'timestamp',
-                                Gio.SettingsBindFlags.DEFAULT)
+                               Gio.SettingsBindFlags.DEFAULT)
         return account
 
     def fetch(self, imsi):
@@ -133,5 +135,3 @@ class AccountDB(object):
         account = self._bind_account(imsi)
         account.props.name = provider.name
         account.props.code = provider.country
-
-

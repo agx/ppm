@@ -518,7 +518,7 @@ class PPMEnableModemInfoBar(PPMInfoBar):
         PPMInfoBar.__init__(self, view)
         self.info_bar.add_button(_("Enable"), Gtk.ResponseType.OK)
         self.info_bar.set_message_type(Gtk.MessageType.WARNING)
-        self.msg_label = Gtk.Label(_("Modem not enabled"))
+        self.msg_label = Gtk.Label(label=_("Modem not enabled"))
         content_area = self.info_bar.get_content_area()
         content_area.add(self.msg_label)
         self.msg_label.show()
@@ -560,7 +560,7 @@ class PPMNoModemFoundInfoBar(PPMInfoBar):
     def __init__(self, container):
         PPMInfoBar.__init__(self, container)
         self.info_bar.set_message_type(Gtk.MessageType.WARNING)
-        self.msg_label = Gtk.Label(_("No modem found."))
+        self.msg_label = Gtk.Label(label=_("No modem found."))
         content_area = self.info_bar.get_content_area()
         content_area.add(self.msg_label)
         self.info_bar.add_button(_("Try again"), Gtk.ResponseType.OK)

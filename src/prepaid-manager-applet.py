@@ -209,14 +209,14 @@ class PPMController(GObject.GObject):
             modem = modems[0] # FIXME: handle multiple modems
             logging.debug("Using modem %s" % modem)
             self.mm.set_modem(modem)
-            GObject.timeout_add(500, self.init_account_and_provider)
+            GLib.timeout_add(500, self.init_account_and_provider)
         else:
             self.view.show_no_modem_found()
         return False
 
     def schedule_setup(self):
         """Schedule another run of setup"""
-        GObject.timeout_add(1, self.setup)
+        GLib.timeout_add(1, self.setup)
 
     def enable_modem(self):
         """Enable the modem"""
@@ -258,12 +258,12 @@ class PPMController(GObject.GObject):
 
     def on_modem_enable(self, var, user_data):
         """Callback for succesful MM enable modem  call"""
-        GObject.timeout_add(500, self.init_account_and_provider)
+        GLib.timeout_add(500, self.init_account_and_provider)
 
     def on_modem_enable_error(self, e):
         """Callback for failed MM enable modem  call"""
         self.on_modem_error(e)
-        GObject.timeout_add(500, self.init_account_and_provider)
+        GLib.timeout_add(500, self.init_account_and_provider)
 
     def on_modem_error(self, e):
         self.view.show_modem_error(e.msg)
@@ -541,8 +541,8 @@ class PPMModemResponseInfoBar(PPMInfoBar):
 
     def show(self):
         logging.debug("Awaiting modem resonse")
-        self.timer = GObject.timeout_add(50, self.do_progress,
-                                        priority=GLib.PRIORITY_HIGH)
+        self.timer = GLib.timeout_add(50, self.do_progress,
+                                      priority=GLib.PRIORITY_HIGH)
         PPMInfoBar.show(self)
 
     def hide(self):

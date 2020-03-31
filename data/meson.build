@@ -1,3 +1,12 @@
+desktop_file = i18n.merge_file(
+  input: 'prepaid-manager-applet.desktop.in',
+  output: 'prepaid-manager-applet.desktop',
+  type: 'desktop',
+  po_dir: '../po',
+  install: true,
+  install_dir: join_paths(get_option('datadir'), 'applications')
+)
+
 schemas = ['org.gnome.PrepaidManager.gschema.xml']
 compiled = gnome.compile_schemas(
   build_by_default: true

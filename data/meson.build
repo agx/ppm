@@ -33,7 +33,5 @@ if appstream_util.found()
   )
 endif
 
-iconsdir = join_paths(get_option('datadir'), 'icons', 'hicolor')
-foreach size: ['scalable', '128x128', '64x64', '48x48', '32x32']
-  install_subdir('icons/' + size, install_dir: iconsdir)
-endforeach
+iconsdir = join_paths(get_option('datadir'), 'icons')
+install_subdir('hicolor/', install_dir: iconsdir)

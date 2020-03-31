@@ -17,6 +17,7 @@
 from builtins import object
 import logging
 
+
 class ProviderError(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -74,9 +75,9 @@ class Provider(object):
 
     def fetch_balance(self, mm, reply_func=None, error_func=None):
         if self.has_fetch_balance_cmd():
-            mm.ussd_initiate (self.fetch_balance_cmds['ussd'],
-                              reply_func=reply_func,
-                              error_func=error_func)
+            mm.ussd_initiate(self.fetch_balance_cmds['ussd'],
+                             reply_func=reply_func,
+                             error_func=error_func)
             return True
         else:
             return False
@@ -84,10 +85,10 @@ class Provider(object):
     def top_up(self, mm, code, reply_func=None, error_func=None):
         if self.has_top_up_cmd():
             cmd = self.top_up_cmds['ussd'][0].replace(
-                                                  self.top_up_cmds['ussd'][1],
-                                                  code)
+                self.top_up_cmds['ussd'][1],
+                code)
             logging.debug("Top up cmd: %s", cmd)
-            mm.ussd_initiate (cmd, reply_func=reply_func, error_func=error_func)
+            mm.ussd_initiate(cmd, reply_func=reply_func, error_func=error_func)
             return True
         else:
             return False

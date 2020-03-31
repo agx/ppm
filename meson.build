@@ -12,8 +12,8 @@ gnome = import('gnome')
 i18n = import('i18n')
 
 gio_dep = dependency('gio-2.0', version: '>=2.25.6')
-gtk_dep = dependency('gtk+-3.0', version: '>=3.0.0')
-pygobject_dep = dependency('pygobject-3.0', version: '>=3.0')
+gtk_dep = dependency('gtk+-3.0', version: '>=3.22.0')
+pygobject_dep = dependency('pygobject-3.0', version: '>=3.22')
 
 subdir('data')
 subdir('src')

@@ -10,11 +10,10 @@ by the built in 3G chipset in your laptop/netbook.
 
 Requirements
 ------------
-* ModemManager with ussd support (>= 0.5)
+* ModemManager with ussd support (>= 1.4)
 * mobile-broadband-provider-info with top-up support (>= 20110319)
-* GTK+ >= 3.0.0, Debian package: libgtk+-3-0
-* PyGObject >= 2.28.3, Debian package: python-gobject
-* DBus Python Bindings >= 0.83, Debian package: python-dbus
+* GTK+ >= 3.22, Debian package: libgtk+-3-0
+* PyGObject >= 3.22, Debian package: python-gobject
 
 Build
 -----

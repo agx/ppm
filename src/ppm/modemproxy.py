@@ -151,9 +151,6 @@ class ModemManagerProxy(GObject.GObject):
             return card.Get('(ss)', self.MM_DBUS_INTERFACE_SIM, 'Imsi')
         except Exception as msg:
             raise ModemError("Getting IMSI failed: %s" % msg)
-        if not re.match(self.IMSI_RE, imsi):
-            raise ModemError("%s is not a valid imsi" % imsi)
-        return imsi
 
     def get_network_id(self):
         imsi = self.get_imsi()

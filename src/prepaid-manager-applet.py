@@ -333,7 +333,19 @@ class PPMObject(object):
 
 
 # View
-class PPMDialog(GObject.GObject, PPMObject):
+@Gtk.Template.from_resource('/org/gnome/PrepaidManager/ui/ppm.ui')
+class PPMDialog(Gtk.ApplicationWindow):
+    __gtype_name__ = "PPMDialog"
+
+    label_balance_provider_name = Gtk.Template.Child()
+    label_topup_provider_name = Gtk.Template.Child()
+    label_balance_info = Gtk.Template.Child()
+    label_balance_timestamp = Gtk.Template.Child()
+    label_balance_from = Gtk.Template.Child()
+    entry_code = Gtk.Template.Child()
+    button_top_up = Gtk.Template.Child()
+    label_top_up_reply = Gtk.Template.Child()
+    vbox_main = Gtk.Template.Child()
 
     def _init_about_dialog(self):
         self.about_dialog = Gtk.AboutDialog(
@@ -358,33 +370,22 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.no_modem_found_info_bar = PPMNoModemFoundInfoBar(self)
 
     def _setup_ui(self):
-        self.dialog = self.builder.get_object("ppm_dialog")
-        self._add_elements("label_balance_provider_name",
-                           "label_topup_provider_name",
-                           "label_balance_info",
-                           "label_balance_timestamp",
-                           "label_balance_from",
-                           "entry_code",
-                           "button_top_up",
-                           "label_top_up_reply",
-                           "vbox_main")
         self._init_infobars()
         self._init_subdialogs()
 
     def __init__(self, controller):
-        GObject.GObject.__init__(self)
-        PPMObject.__init__(self, None, "ppm")
+        Gtk.ApplicationWindow.__init__(self)
         self.code_len = 0
         self.controller = controller
         # Register ourself to the controller
         self.controller.view = self
 
         self._setup_ui()
-        self.dialog.show()
+        self.show()
 
     def close(self):
-        self.dialog.hide()
-        self.dialog.destroy()
+        self.hide()
+        self.destroy()
 
     @property
     def info_bar_container(self):
@@ -394,27 +395,34 @@ class PPMDialog(GObject.GObject, PPMObject):
     def get_top_up_code(self):
         return self.entry_code.get_text().strip()
 
+    @Gtk.Template.Callback("on_close_clicked")
     def on_close_clicked(self, dummy):
         self.controller.quit()
 
+    @Gtk.Template.Callback("on_delete")
     def on_delete(self, event, dummy):
         self.controller.quit()
         return False
 
+    @Gtk.Template.Callback("on_balance_top_up_clicked")
     def on_balance_top_up_clicked(self, dummy):
         self.clear_top_up_information()
         self.controller.top_up_balance()
 
+    @Gtk.Template.Callback("on_about_activated")
     def on_about_activated(self, dummy):
         self.about_dialog.run()
         self.about_dialog.hide()
 
+    @Gtk.Template.Callback("on_balance_info_renew_clicked")
     def on_balance_info_renew_clicked(self, dummy):
         self.controller.fetch_balance()
 
+    @Gtk.Template.Callback("on_provider_change_clicked")
     def on_provider_change_clicked(self, dummy):
         self.controller.get_provider_interactive(imsi=None)
 
+    @Gtk.Template.Callback("on_entry_code_insert")
     def on_entry_code_insert(self, entry):
         cur_len = entry.get_text_length()
         sensitive = True
@@ -460,7 +468,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.provider_info_missing_dialog.provider_unknown(mcc, mnc)
 
     def show_modem_error(self, msg):
-        dialog = Gtk.MessageDialog(parent=self.dialog,
+        dialog = Gtk.MessageDialog(parent=self,
                                    modal=True,
                                    destroy_with_parent=True,
                                    message_type=Gtk.MessageType.ERROR,
@@ -482,7 +490,7 @@ class PPMDialog(GObject.GObject, PPMObject):
     def show_error(self, msg):
         """show generic error"""
         logging.debug(msg)
-        error = Gtk.MessageDialog(parent=self.dialog,
+        error = Gtk.MessageDialog(parent=self,
                                   modal=True,
                                   destroy_with_parent=True,
                                   message_type=Gtk.MessageType.ERROR,
@@ -498,9 +506,6 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.modem_response_info_bar.hide()
 
 
-GObject.type_register(PPMDialog)
-
-
 class PPMInfoBar(object):
     def __init__(self, view):
         self.view = view
@@ -514,7 +519,7 @@ class PPMInfoBar(object):
     def hide(self):
         self.info_bar.hide()
         self.view.info_bar_container.remove(self.info_bar)
-        self.view.dialog.resize(1, 1)
+        self.view.resize(1, 1)
 
 
 class PPMEnableModemInfoBar(PPMInfoBar):
@@ -591,7 +596,7 @@ class PPMProviderAssistant(PPMObject):
                            "liststore_providers",
                            "label_country",
                            "label_provider")
-        self.assistant.set_transient_for(main_dialog.dialog)
+        self.assistant.set_transient_for(main_dialog)
         self.liststore_countries = None
         self.country_code = None
         self.provider = None
@@ -726,7 +731,7 @@ class PPMProviderInfoMissingDialog(object):
                 'MobileBroadband/ServiceProviders\">GNOME Wiki</a>')
 
     def __init__(self, main_dialog):
-        self.dialog = Gtk.MessageDialog(parent=main_dialog.dialog,
+        self.dialog = Gtk.MessageDialog(parent=main_dialog,
                                         modal=True,
                                         destroy_with_parent=True,
                                         message_type=Gtk.MessageType.INFO,

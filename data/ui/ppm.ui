@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk+" version="2.16"/>
-  <object class="GtkWindow" id="ppm_dialog">
+  <requires lib="gtk+" version="3.16"/>
+  <template class="PPMDialog" parent="GtkApplicationWindow">
     <property name="can_focus">False</property>
     <signal name="delete-event" handler="on_delete" swapped="no"/>
     <child>
@@ -386,5 +386,5 @@
         </child>
       </object>
     </child>
-  </object>
+  </template>
 </interface>

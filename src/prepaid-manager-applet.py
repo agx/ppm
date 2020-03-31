@@ -765,19 +765,6 @@ def setup_i18n():
     logging.debug('Using locale: %s', locale.getlocale())
 
 
-def setup_schemas():
-    """If we're running from the source tree add our gsettings schema to the
-    list of schema dirs"""
-
-    schema_dir = 'data'
-    schema = os.path.join(schema_dir,
-                          "%s.gschema.xml" % AccountDB.PPM_GSETTINGS_ID)
-    if os.path.exists(schema):
-        logging.debug("Running from source tree, adding local schema dir '%s'"
-                      % schema_dir)
-        os.environ["GSETTINGS_SCHEMA_DIR"] = "data"
-
-
 def setup_prgname():
     """Set the prgname since gnome-shell is application based"""
     GLib.set_prgname(ppm.prgname)
@@ -802,7 +789,6 @@ def main(args):
 
     setup_i18n()
     setup_prgname()
-    setup_schemas()
 
     controller = PPMController()
     main_dialog = PPMDialog(controller)

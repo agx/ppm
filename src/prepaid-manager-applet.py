@@ -32,6 +32,7 @@ from ppm.accountdb import AccountDB
 
 import gettext
 import gi
+from gi.repository import Gio
 from gi.repository import GObject
 from gi.repository import GLib
 gi.require_version('Gtk', '3.0')
@@ -40,6 +41,10 @@ from gi.repository import Gdk  # noqa: E402
 
 
 _ = None
+
+# Needs to happen early so we can use it to create classes based on templates
+resource = Gio.Resource.load(os.path.join(ppm.data_dir, "ppm.gresource"))
+resource._register()
 
 
 # The controller receives input and initiates a response by making calls on model
@@ -319,7 +324,7 @@ class PPMObject(object):
         """Load the user interfade description"""
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain(ppm.gettext_app)
-        self.builder.add_from_file(os.path.join(ppm.ui_dir, '%s.ui' % ui))
+        self.builder.add_from_resource('/org/gnome/PrepaidManager/ui/%s.ui' % ui)
         self.builder.connect_signals(self)
 
     def _add_elem(self, name):

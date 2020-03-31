@@ -33,5 +33,14 @@ if appstream_util.found()
   )
 endif
 
+ppm_resources = gnome.compile_resources(
+  'ppm',
+  'ppm.gresources.xml',
+  gresource_bundle: true,
+  c_name: 'ppm',
+  install: true,
+  install_dir: pkgdatadir,
+)
+
 iconsdir = join_paths(get_option('datadir'), 'icons')
 install_subdir('hicolor/', install_dir: iconsdir)

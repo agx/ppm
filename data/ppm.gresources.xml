@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/gnome/PrepaidManager">
+    <file>ui/ppm.ui</file>
+    <file>ui/ppm-provider-assistant.ui</file>
+  </gresource>
+</gresources>

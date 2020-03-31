@@ -2,6 +2,6 @@
 
 gettext_app = '@PACKAGE@'
 gettext_dir = '@GETTEXTDIR@'
-ui_dir      = '@PKGDATADIR@'
+data_dir    = '@PKGDATADIR@'
 version     = '@VERSION@'
 prgname     = '@PACKAGE@'

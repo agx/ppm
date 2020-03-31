@@ -9,11 +9,7 @@ configure_file(
   install_dir: get_option('bindir')
 )
 
-sources = [
-  package + '.py',
-  'ppm.ui',
-  'ppm-provider-assistant.ui',
-]
+sources = [package + '.py']
 install_data(sources, install_dir: pkgdatadir)
 
 subdir('ppm')

@@ -7,7 +7,7 @@ desktop_file = i18n.merge_file(
   install_dir: join_paths(get_option('datadir'), 'applications')
 )
 
-schemas = ['org.gnome.PrepaidManager.gschema.xml']
+schemas = [app_id + '.gschema.xml']
 compiled = gnome.compile_schemas(
   build_by_default: true
 )

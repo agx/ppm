@@ -1,7 +1,7 @@
 # Paths for prepaid-manager-applet
 
-gettext_app = '::PACKAGE::'
-gettext_dir = '::GETTEXTDIR::'
-ui_dir      = '::PKGDATADIR::'
-version     = '::VERSION::'
-prgname     = '::PACKAGE::'
+gettext_app = '@PACKAGE@'
+gettext_dir = '@GETTEXTDIR@'
+ui_dir      = '@PKGDATADIR@'
+version     = '@VERSION@'
+prgname     = '@PACKAGE@'

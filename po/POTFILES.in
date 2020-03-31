@@ -1,4 +1,3 @@
-data/org.gnome.PrepaidManager.gschema.xml.in.in
 data/prepaid-manager-applet.appdata.xml.in
 [type: gettext/glade]src/ppm.ui
 [type: gettext/glade]src/ppm-provider-assistant.ui

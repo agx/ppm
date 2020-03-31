@@ -1,6 +1,6 @@
 [Desktop Entry]
-_Name=Prepaid Manager
-_Comment=Manage balance of prepaid GSM SIM cards
+Name=Prepaid Manager
+Comment=Manage balance of prepaid GSM SIM cards
 Exec=prepaid-manager-applet
 Terminal=false
 Type=Application

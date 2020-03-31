@@ -10,6 +10,7 @@ by the built in 3G chipset in your laptop/netbook.
 
 Requirements
 ------------
+* Python3
 * ModemManager with ussd support (>= 1.4)
 * mobile-broadband-provider-info with top-up support (>= 20110319)
 * GTK+ >= 3.22, Debian package: libgtk+-3-0

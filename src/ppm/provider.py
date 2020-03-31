@@ -14,6 +14,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 import logging
 
 class ProviderError(Exception):
@@ -48,14 +49,14 @@ class Provider(object):
 
     def has_fetch_balance_cmd(self):
         # Only USSD for now
-        if self.fetch_balance_cmds.has_key('ussd'):
+        if 'ussd' in self.fetch_balance_cmds:
             return True
         else:
             return False
 
     def has_top_up_cmd(self):
         # Only USSD for now
-        if self.top_up_cmds.has_key('ussd'):
+        if 'ussd' in self.top_up_cmds:
             return True
         else:
             return False

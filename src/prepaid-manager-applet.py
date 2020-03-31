@@ -15,6 +15,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import gettext
 import gi
 from gi.repository import GObject
@@ -410,8 +414,8 @@ class PPMDialog(GObject.GObject, PPMObject):
         sensitive = True
 
         if self.code_len > 0:
-            self.entry_code.set_progress_fraction(float(cur_len) /
-                                                  self.code_len)
+            self.entry_code.set_progress_fraction(old_div(float(cur_len),
+                                                  self.code_len))
             if cur_len != self.code_len:
                 sensitive = False
         self.button_top_up.set_sensitive(sensitive)
@@ -569,7 +573,7 @@ class PPMNoModemFoundInfoBar(PPMInfoBar):
 
 
 class PPMProviderAssistant(PPMObject):
-    PAGE_INTRO, PAGE_COUNTRIES, PAGE_PROVIDERS, PAGE_CONFIRM = range(0, 4)
+    PAGE_INTRO, PAGE_COUNTRIES, PAGE_PROVIDERS, PAGE_CONFIRM = list(range(0, 4))
 
     def __init__(self, main_dialog):
         PPMObject.__init__(self, main_dialog, "ppm-provider-assistant")

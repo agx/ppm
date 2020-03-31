@@ -14,11 +14,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 import os
 import logging
 from lxml import etree
 
-from provider import Provider
+from . provider import Provider
 
 class ProviderDB(object):
     """Proxy to mobile broadband provider database"""
@@ -50,7 +51,7 @@ class ProviderDB(object):
 
     def _load_countries(self):
         try:
-            for line in file(self.country_codes, 'r'):
+            for line in open(self.country_codes, 'r'):
                 if line[0] != '#':
                     (code, country) = line.split('\t',2)
                     self.__countries[code.lower()] = country.strip()

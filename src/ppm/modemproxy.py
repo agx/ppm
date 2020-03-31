@@ -92,10 +92,10 @@ class ModemManagerProxy(GObject.GObject):
 
     def mm_request(func):
         def wrapped_f( self, *args, **kw):
-            self.request = "%s" % func.func_name
-            if kw.has_key('reply_func'):
+            self.request = "%s" % func.__name__
+            if 'reply_func' in kw:
                 self.reply_func = kw['reply_func']
-            if kw.has_key('error_func'):
+            if 'error_func' in kw:
                 self.error_func = kw['error_func']
             self.emit('request-started', self)
             func(self, *args, **kw)
@@ -135,7 +135,7 @@ class ModemManagerProxy(GObject.GObject):
     def get_modems(self):
         modems = []
         self.get_objects()
-        for path, obj in self.objects().iteritems():
+        for path, obj in self.objects().items():
             if self.MM_DBUS_INTERFACE_MODEM in obj:
                 modems.append(path)
         return modems

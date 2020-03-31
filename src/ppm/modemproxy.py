@@ -18,7 +18,6 @@ from gi.repository import GObject
 from gi.repository import GLib
 from gi.repository import Gio
 
-import re
 
 class ModemError(Exception):
     def __init__(self, msg):
@@ -28,7 +27,7 @@ class ModemError(Exception):
         return [False, True][self.msg.find("Operation not allowed") != -1]
 
     def is_disabled(self):
-         return [False, True][self.msg.find("not enabled") != -1]
+        return [False, True][self.msg.find("not enabled") != -1]
 
 
 class ModemManagerProxy(GObject.GObject):
@@ -39,14 +38,14 @@ class ModemManagerProxy(GObject.GObject):
     @type modem: string
     """
 
-    DBUS_INTERFACE_PROPERTIES='org.freedesktop.DBus.Properties'
-    DBUS_INTERFACE_OBJECT_MANAGER='org.freedesktop.DBus.ObjectManager'
-    MM_DBUS_SERVICE='org.freedesktop.ModemManager1'
-    MM_DBUS_INTERFACE_MODEM_MANAGER='org.freedesktop.ModemManager1'
-    MM_DBUS_OBJECT_MODEM_MANAGER='/org/freedesktop/ModemManager1'
-    MM_DBUS_INTERFACE_MODEM='org.freedesktop.ModemManager1.Modem'
-    MM_DBUS_INTERFACE_SIM='org.freedesktop.ModemManager1.Sim'
-    MM_DBUS_INTERFACE_MODEM_GSM_USSD='org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd'
+    DBUS_INTERFACE_PROPERTIES = 'org.freedesktop.DBus.Properties'
+    DBUS_INTERFACE_OBJECT_MANAGER = 'org.freedesktop.DBus.ObjectManager'
+    MM_DBUS_SERVICE = 'org.freedesktop.ModemManager1'
+    MM_DBUS_INTERFACE_MODEM_MANAGER = 'org.freedesktop.ModemManager1'
+    MM_DBUS_OBJECT_MODEM_MANAGER = '/org/freedesktop/ModemManager1'
+    MM_DBUS_INTERFACE_MODEM = 'org.freedesktop.ModemManager1.Modem'
+    MM_DBUS_INTERFACE_SIM = 'org.freedesktop.ModemManager1.Sim'
+    MM_DBUS_INTERFACE_MODEM_GSM_USSD = 'org.freedesktop.ModemManager1.Modem.Modem3gpp.Ussd'
     MM_DBUS_TIMEOUT = 5000
     MM_DBUS_FLAGS = (Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES |
                      Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS)
@@ -55,12 +54,12 @@ class ModemManagerProxy(GObject.GObject):
 
     __gsignals__ = {
         # Emitted when a request to MM starts
-        'request-started':  (GObject.SignalFlags.RUN_FIRST, None,
-                             [object]),
+        'request-started': (GObject.SignalFlags.RUN_FIRST, None,
+                            [object]),
         # Emitted when a request has finished
         'request-finished': (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
-        }
+    }
 
     def __init__(self):
         GObject.GObject.__init__(self)
@@ -91,7 +90,7 @@ class ModemManagerProxy(GObject.GObject):
         self.modem = modem
 
     def mm_request(func):
-        def wrapped_f( self, *args, **kw):
+        def wrapped_f(self, *args, **kw):
             self.request = "%s" % func.__name__
             if 'reply_func' in kw:
                 self.reply_func = kw['reply_func']
@@ -99,20 +98,20 @@ class ModemManagerProxy(GObject.GObject):
                 self.error_func = kw['error_func']
             self.emit('request-started', self)
             func(self, *args, **kw)
-        wrapped_f.__name__= func.__name__
-        wrapped_f.__doc__= func.__doc__
+        wrapped_f.__name__ = func.__name__
+        wrapped_f.__doc__ = func.__doc__
         return wrapped_f
 
     def mm_request_done(func):
-        def wrapped_f( self, *args, **kw):
+        def wrapped_f(self, *args, **kw):
             self.emit('request-finished', self)
             ret = func(self, *args, **kw)
             self.reply_func = None
             self.error_func = None
             self.request = None
             return ret
-        wrapped_f.__name__= func.__name__
-        wrapped_f.__doc__= func.__doc__
+        wrapped_f.__name__ = func.__name__
+        wrapped_f.__doc__ = func.__doc__
         return wrapped_f
 
     def request_pending(self):
@@ -197,5 +196,6 @@ class ModemManagerProxy(GObject.GObject):
         self._modem_enable(False,
                            reply_func=reply_func,
                            error_func=error_func)
+
 
 GObject.type_register(ModemManagerProxy)

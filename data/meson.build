@@ -18,8 +18,8 @@ install_data(
 )
 
 appstream_file = i18n.merge_file(
-  input: 'prepaid-manager-applet.appdata.xml.in',
-  output: 'prepaid-manager-applet.appdata.xml',
+  input: app_id + '.appdata.xml.in',
+  output: app_id + '.appdata.xml',
   po_dir: '../po',
   install: true,
   install_dir: join_paths(get_option('datadir'), 'appdata')

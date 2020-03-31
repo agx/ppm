@@ -1,5 +1,5 @@
 <schemalist>
-  <schema id="org.gnome.PrepaidManager" path="/apps/prepaid-manager/">
+  <schema id="org.gnome.PrepaidManager" path="/org/gnome/prepaid-manager/">
     <key name="accounts" type="as">
       <default>[]</default>
       <summary>Accounts</summary>

@@ -325,6 +325,7 @@ class PPMDialog(Gtk.ApplicationWindow):
 
     def _init_about_dialog(self):
         self.about_dialog = Gtk.AboutDialog(
+            parent=self,
             authors=["Guido Günther <agx@sigxcpu.org>"],
             website="https://honk.sigxcpu.org/piki/projects/ppm/",
             website_label=_("Website"),

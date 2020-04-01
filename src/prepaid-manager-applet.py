@@ -367,10 +367,6 @@ class PPMDialog(Gtk.ApplicationWindow):
         self._setup_ui()
         self.show()
 
-    def close(self):
-        self.hide()
-        self.destroy()
-
     @property
     def info_bar_container(self):
         """The widget that contains the main info bar"""
@@ -378,15 +374,6 @@ class PPMDialog(Gtk.ApplicationWindow):
 
     def get_top_up_code(self):
         return self.entry_code.get_text().strip()
-
-    @Gtk.Template.Callback("on_close_clicked")
-    def on_close_clicked(self, dummy):
-        self.controller.quit()
-
-    @Gtk.Template.Callback("on_delete")
-    def on_delete(self, event, dummy):
-        self.controller.quit()
-        return False
 
     @Gtk.Template.Callback("on_balance_top_up_clicked")
     def on_balance_top_up_clicked(self, dummy):

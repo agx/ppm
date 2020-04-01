@@ -382,8 +382,7 @@ class PPMDialog(Gtk.ApplicationWindow):
         self.controller.top_up_balance()
 
     def on_about_activated(self, *argv):
-        self.about_dialog.run()
-        self.about_dialog.hide()
+        self.about_dialog.show()
 
     @Gtk.Template.Callback("on_balance_info_renew_clicked")
     def on_balance_info_renew_clicked(self, dummy):

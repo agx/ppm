@@ -119,7 +119,8 @@
                 <child>
                   <object class="GtkLabel" id="label_balance_from">
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Balance information from</property>
+                    <property name="label" translatable="yes">Balance from:</property>
+                    <property name="wrap">True</property>
                   </object>
                   <packing>
                     <property name="top_attach">1</property>

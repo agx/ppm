@@ -2,3 +2,5 @@
 * Collect balance statistics in sqlitedb
 * Handle multiple modems
 * Add support for SMS top-up messages as used by some providers
+* USSD menus
+* Use gir1.2-modemmanager-1.0 now that it exists

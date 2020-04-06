@@ -31,6 +31,15 @@ class ModemError(Exception):
         return [False, True][self.msg.find("not enabled") != -1]
 
 
+class Modem(GObject.GObject):
+    def __init__(self, path):
+        GObject.GObject.__init__(self)
+        self._path = path
+
+    @property
+    def path(self):
+        return self._path
+
 class ModemManagerProxy(GObject.GObject):
     """Interface to ModemManager DBus API
     @ivar request: current pending request to ModemManager
@@ -167,7 +176,7 @@ class ModemManagerProxy(GObject.GObject):
         for obj in objs:
             for path, ifaces in obj.items():
                 if self.MM_DBUS_INTERFACE_MODEM in ifaces:
-                    self._modems.append(path)
+                    self._modems.append(Modem(path))
         logging.debug("Found modems: %s", self.modems)
         self.emit('got-modems', self)
 
@@ -190,7 +199,7 @@ class ModemManagerProxy(GObject.GObject):
                                       self.MM_DBUS_FLAGS,
                                       None,
                                       self.MM_DBUS_SERVICE,
-                                      self.objects()[self.modem][self.MM_DBUS_INTERFACE_MODEM]['Sim'],
+                                      self.objects()[self.modem.path][self.MM_DBUS_INTERFACE_MODEM]['Sim'],
                                       self.DBUS_INTERFACE_PROPERTIES,
                                       None)
         try:
@@ -210,7 +219,7 @@ class ModemManagerProxy(GObject.GObject):
                                       self.MM_DBUS_FLAGS,
                                       None,
                                       self.MM_DBUS_SERVICE,
-                                      self.modem,
+                                      self.modem.path,
                                       self.MM_DBUS_INTERFACE_MODEM_GSM_USSD,
                                       None)
         ussd.call("Initiate", GLib.Variant('(s)', (command,)),
@@ -223,7 +232,7 @@ class ModemManagerProxy(GObject.GObject):
                                       self.MM_DBUS_FLAGS,
                                       None,
                                       self.MM_DBUS_SERVICE,
-                                      self.modem,
+                                      self.modem.path,
                                       self.MM_DBUS_INTERFACE_MODEM,
                                       None)
         ussd.call("Enable", GLib.Variant('(b)', (enable,)),

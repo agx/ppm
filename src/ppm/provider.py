@@ -12,11 +12,11 @@
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
+#    along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+from builtins import object
 import logging
+
 
 class ProviderError(Exception):
     def __init__(self, msg):
@@ -50,14 +50,14 @@ class Provider(object):
 
     def has_fetch_balance_cmd(self):
         # Only USSD for now
-        if self.fetch_balance_cmds.has_key('ussd'):
+        if 'ussd' in self.fetch_balance_cmds:
             return True
         else:
             return False
 
     def has_top_up_cmd(self):
         # Only USSD for now
-        if self.top_up_cmds.has_key('ussd'):
+        if 'ussd' in self.top_up_cmds:
             return True
         else:
             return False
@@ -75,9 +75,9 @@ class Provider(object):
 
     def fetch_balance(self, mm, reply_func=None, error_func=None):
         if self.has_fetch_balance_cmd():
-            mm.ussd_initiate (self.fetch_balance_cmds['ussd'],
-                              reply_func=reply_func,
-                              error_func=error_func)
+            mm.ussd_initiate(self.fetch_balance_cmds['ussd'],
+                             reply_func=reply_func,
+                             error_func=error_func)
             return True
         else:
             return False
@@ -85,10 +85,10 @@ class Provider(object):
     def top_up(self, mm, code, reply_func=None, error_func=None):
         if self.has_top_up_cmd():
             cmd = self.top_up_cmds['ussd'][0].replace(
-                                                  self.top_up_cmds['ussd'][1],
-                                                  code)
+                self.top_up_cmds['ussd'][1],
+                code)
             logging.debug("Top up cmd: %s", cmd)
-            mm.ussd_initiate (cmd, reply_func=reply_func, error_func=error_func)
+            mm.ussd_initiate(cmd, reply_func=reply_func, error_func=error_func)
             return True
         else:
             return False

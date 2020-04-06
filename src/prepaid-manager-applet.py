@@ -13,16 +13,12 @@
 #    GNU General Public License for more details.
 #
 #    You should have received a copy of the GNU General Public License
-#    along with this program; if not, write to the Free Software
-#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-#
+#    along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-
-import gettext
-from gi.repository import GObject
-from gi.repository import GLib
-from gi.repository import Gtk
-from gi.repository import Gdk
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import locale
 import logging
 import os
@@ -31,14 +27,30 @@ import time
 
 import ppm
 from ppm.modemproxy import (ModemManagerProxy, ModemError)
-from ppm.provider import Provider
 from ppm.providerdb import ProviderDB
 from ppm.accountdb import AccountDB
+
+import gettext
+import gi
+from gi.repository import Gio
+from gi.repository import GObject
+from gi.repository import GLib
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk  # noqa: E402
+from gi.repository import Gdk  # noqa: E402
+
+
+_ = None
+
+# Needs to happen early so we can use it to create classes based on templates
+resource = Gio.Resource.load(os.path.join(ppm.data_dir, "ppm.gresource"))
+resource._register()
+
 
 # The controller receives input and initiates a response by making calls on model
 # objects. A controller accepts input from the user and instructs the model and
 # view to perform actions based on that input.
-class PPMController(GObject.GObject):
+class PPMController(Gtk.Application):
     """
     @ivar providers: the possible providers
     @ivar imsi: the imsi if we could fetch it from the modem
@@ -53,15 +65,17 @@ class PPMController(GObject.GObject):
         # Emitted when the provider changed
         'provider-changed': (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
-        }
+    }
 
     def _connect_mm_signals(self):
         self.mm.connect('request-started', self.on_mm_request_started)
         self.mm.connect('request-finished', self.on_mm_request_finished)
+        self.mm.connect('got-modems', self.on_mm_got_modems)
 
     def __init__(self):
-        GObject.GObject.__init__(self)
+        Gtk.Application.__init__(self, application_id=ppm.app_id)
         self.mm = None
+        self.mm_tries = 0
         self.imsi = None
         self.provider = None
         self.account = None
@@ -74,9 +88,12 @@ class PPMController(GObject.GObject):
 
     def fetch_balance(self):
         """Fetch the current account balance from the  network"""
+        if not self.mm.modem.enabled:
+            self.view.show_modem_enable()
+
         if not self.provider.fetch_balance(self.mm,
-                                        reply_func=self.on_balance_info_fetched,
-                                        error_func=self.on_modem_error):
+                                           reply_func=self.on_balance_info_fetched,
+                                           error_func=self.on_modem_error):
             self.view.show_provider_balance_info_missing(self.provider)
             logging.error("No idea how to fetch account information for "
                           "%s in %s.", self.provider.name, self.provider.country)
@@ -156,6 +173,11 @@ class PPMController(GObject.GObject):
         """Fetch the imsi and deduce account and provider information"""
 
         logging.debug("Fetching account information")
+
+        if not self.mm.modem.enabled:
+            self.view.show_modem_enable()
+            return False
+
         try:
             self.imsi = self.mm.get_imsi()
         except ModemError as me:
@@ -163,17 +185,13 @@ class PPMController(GObject.GObject):
             if me.is_forbidden():
                 self.view.show_provider_assistant()
                 return False
-            if not me.is_disabled():
-                self.view.show_modem_error(me.msg)
-                return False
 
-            logging.info("modem not enabled.")
-            self.view.show_modem_enable()
+            self.view.show_modem_error(me.msg)
             return False
 
         try:
             account = self._get_account_from_accountdb(self.imsi)
-        except:
+        except Exception:
             # Fetching account from the DB failed, so start over
             account = None
 
@@ -190,25 +208,35 @@ class PPMController(GObject.GObject):
         # Everything worked out, disable the timer.
         return False
 
-    def setup(self):
-        logging.debug("Setting up")
-
-        self.mm = ModemManagerProxy()
-        self._connect_mm_signals()
-
-        modems = self.mm.get_modems()
-        if modems:
-            modem = modems[0] # FIXME: handle multiple modems
+    def on_mm_got_modems(self, obj, mm_proxy):
+        if mm_proxy.modems:
+            modem = mm_proxy.modems[0]  # FIXME: handle multiple modems
             logging.debug("Using modem %s" % modem)
             self.mm.set_modem(modem)
-            GObject.timeout_add(500, self.init_account_and_provider)
+            GLib.timeout_add(500, self.init_account_and_provider)
         else:
             self.view.show_no_modem_found()
+
+    def setup(self):
+        logging.debug("Setting up")
+        # Wait for MM Proxy to become ready:
+        if not self.mm.ready():
+            self.mm_tries += 1
+            logging.debug("Not yet ready, rescheduling")
+            return True
+        if self.mm_tries > 5:
+            self.view.show_no_modem_found()
+            return False
+
+        self.mm.dbus_find_modems()
         return False
 
     def schedule_setup(self):
         """Schedule another run of setup"""
-        GObject.timeout_add(1, self.setup)
+
+        self.mm = ModemManagerProxy()
+        self._connect_mm_signals()
+        GLib.timeout_add(500, self.setup)
 
     def enable_modem(self):
         """Enable the modem"""
@@ -250,12 +278,12 @@ class PPMController(GObject.GObject):
 
     def on_modem_enable(self, var, user_data):
         """Callback for succesful MM enable modem  call"""
-        GObject.timeout_add(500, self.init_account_and_provider)
+        GLib.timeout_add(500, self.init_account_and_provider)
 
     def on_modem_enable_error(self, e):
         """Callback for failed MM enable modem  call"""
         self.on_modem_error(e)
-        GObject.timeout_add(500, self.init_account_and_provider)
+        GLib.timeout_add(500, self.init_account_and_provider)
 
     def on_modem_error(self, e):
         self.view.show_modem_error(e.msg)
@@ -278,8 +306,8 @@ class PPMController(GObject.GObject):
             self.account.update_provider(provider)
             if self.account.props.timestamp:
                 self.view.update_account_balance_information(
-                                    self.account.balance,
-                                    self.account.timestamp)
+                    self.account.balance,
+                    self.account.timestamp)
 
     def on_balance_info_changed(self, obj, balance):
         """Act on balance-info-changed signal"""
@@ -292,45 +320,32 @@ class PPMController(GObject.GObject):
         self.view.update_account_balance_information(balance, timestamp)
 
 
-GObject.type_register(PPMController)
-
-
-class PPMObject(object):
-    """Dialog or window constructed via a GtkBuilder"""
-    def __init__(self, view, ui):
-        if view:
-            self.controller = view.controller
-        else:
-            self.controller = None
-        self._load_ui(ui)
-
-    def _load_ui(self, ui):
-        """Load the user interfade description"""
-        self.builder = Gtk.Builder()
-        self.builder.set_translation_domain(ppm.gettext_app)
-        self.builder.add_from_file(os.path.join(ppm.ui_dir, '%s.ui' % ui))
-        self.builder.connect_signals(self)
-
-    def _add_elem(self, name):
-        self.__dict__[name] = self.builder.get_object(name)
-
-    def _add_elements(self, *args):
-        for name in args:
-            self._add_elem(name)
-
 # View
-class PPMDialog(GObject.GObject, PPMObject):
+@Gtk.Template.from_resource('/org/gnome/PrepaidManager/ui/ppm.ui')
+class PPMDialog(Gtk.ApplicationWindow):
+    __gtype_name__ = "PPMDialog"
+
+    label_balance_provider_name = Gtk.Template.Child()
+    label_topup_provider_name = Gtk.Template.Child()
+    label_balance_info = Gtk.Template.Child()
+    label_balance_timestamp = Gtk.Template.Child()
+    label_balance_from = Gtk.Template.Child()
+    entry_code = Gtk.Template.Child()
+    button_top_up = Gtk.Template.Child()
+    label_top_up_reply = Gtk.Template.Child()
+    vbox_main = Gtk.Template.Child()
 
     def _init_about_dialog(self):
         self.about_dialog = Gtk.AboutDialog(
-                                authors = ["Guido Günther <agx@sigxcpu.org>"],
-                                website = "https://honk.sigxcpu.org/piki/projects/ppm/",
-                                website_label = _("Website"),
-                                comments = _("Manage balance of prepaid GSM SIM cards"),
-                                wrap_license = True,
-                                version = ppm.version,
-                                logo_icon_name = 'ppm',
-                                license_type = Gtk.License.GPL_3_0)
+            parent=self,
+            authors=["Guido Günther <agx@sigxcpu.org>"],
+            website="https://honk.sigxcpu.org/piki/projects/ppm/",
+            website_label=_("Website"),
+            comments=_("Manage balance of prepaid GSM SIM cards"),
+            wrap_license=True,
+            version=ppm.version,
+            logo_icon_name='ppm',
+            license_type=Gtk.License.GPL_3_0)
 
     def _init_subdialogs(self):
         """Init dialogs shown from the main window"""
@@ -344,33 +359,26 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.no_modem_found_info_bar = PPMNoModemFoundInfoBar(self)
 
     def _setup_ui(self):
-        self.dialog = self.builder.get_object("ppm_dialog")
-        self._add_elements("label_balance_provider_name",
-                           "label_topup_provider_name",
-                           "label_balance_info",
-                           "label_balance_timestamp",
-                           "label_balance_from",
-                           "entry_code",
-                           "button_top_up",
-                           "label_top_up_reply",
-                           "vbox_main")
         self._init_infobars()
         self._init_subdialogs()
 
+    def _add_actions(self):
+        action = Gio.SimpleAction(name='about')
+        action.set_enabled(True)
+        action.connect('activate', self.on_about_activated, None)
+
+        self.add_action(action)
+
     def __init__(self, controller):
-        GObject.GObject.__init__(self)
-        PPMObject.__init__(self, None, "ppm")
+        Gtk.ApplicationWindow.__init__(self)
         self.code_len = 0
         self.controller = controller
         # Register ourself to the controller
         self.controller.view = self
 
+        self._add_actions()
         self._setup_ui()
-        self.dialog.show()
-
-    def close(self):
-        self.dialog.hide()
-        self.dialog.destroy()
+        self.show()
 
     @property
     def info_bar_container(self):
@@ -380,34 +388,30 @@ class PPMDialog(GObject.GObject, PPMObject):
     def get_top_up_code(self):
         return self.entry_code.get_text().strip()
 
-    def on_close_clicked(self, dummy):
-        self.controller.quit()
-
-    def on_delete(self, event, dummy):
-        self.controller.quit()
-        return False
-
+    @Gtk.Template.Callback("on_balance_top_up_clicked")
     def on_balance_top_up_clicked(self, dummy):
         self.clear_top_up_information()
         self.controller.top_up_balance()
 
-    def on_about_activated(self, dummy):
-        self.about_dialog.run()
-        self.about_dialog.hide()
+    def on_about_activated(self, *argv):
+        self.about_dialog.show()
 
+    @Gtk.Template.Callback("on_balance_info_renew_clicked")
     def on_balance_info_renew_clicked(self, dummy):
         self.controller.fetch_balance()
 
+    @Gtk.Template.Callback("on_provider_change_clicked")
     def on_provider_change_clicked(self, dummy):
         self.controller.get_provider_interactive(imsi=None)
 
+    @Gtk.Template.Callback("on_entry_code_insert")
     def on_entry_code_insert(self, entry):
-        cur_len =  entry.get_text_length()
+        cur_len = entry.get_text_length()
         sensitive = True
 
         if self.code_len > 0:
-            self.entry_code.set_progress_fraction(float(cur_len) /
-                                                  self.code_len)
+            self.entry_code.set_progress_fraction(old_div(float(cur_len),
+                                                  self.code_len))
             if cur_len != self.code_len:
                 sensitive = False
         self.button_top_up.set_sensitive(sensitive)
@@ -421,7 +425,7 @@ class PPMDialog(GObject.GObject, PPMObject):
         placeholder = ''
         self.code_len = len
         if len:
-            placeholder = "".join([ str(x)[-1] for x in range(1, len+1) ])
+            placeholder = "".join([str(x)[-1] for x in range(1, len + 1)])
         self.entry_code.set_placeholder_text(placeholder)
 
     def update_account_balance_information(self, balance_text, timestamp):
@@ -446,9 +450,9 @@ class PPMDialog(GObject.GObject, PPMObject):
         self.provider_info_missing_dialog.provider_unknown(mcc, mnc)
 
     def show_modem_error(self, msg):
-        dialog = Gtk.MessageDialog(parent=self.dialog,
-                                   flags=Gtk.DialogFlags.MODAL |
-                                         Gtk.DialogFlags.DESTROY_WITH_PARENT,
+        dialog = Gtk.MessageDialog(parent=self,
+                                   modal=True,
+                                   destroy_with_parent=True,
                                    message_type=Gtk.MessageType.ERROR,
                                    buttons=Gtk.ButtonsType.OK)
         dialog.set_markup("Modem error: %s" % msg)
@@ -468,9 +472,9 @@ class PPMDialog(GObject.GObject, PPMObject):
     def show_error(self, msg):
         """show generic error"""
         logging.debug(msg)
-        error = Gtk.MessageDialog(parent=self.dialog,
-                                  flags=Gtk.DialogFlags.MODAL |
-                                        Gtk.DialogFlags.DESTROY_WITH_PARENT,
+        error = Gtk.MessageDialog(parent=self,
+                                  modal=True,
+                                  destroy_with_parent=True,
                                   message_type=Gtk.MessageType.ERROR,
                                   buttons=Gtk.ButtonsType.OK)
         error.set_markup(msg)
@@ -482,9 +486,6 @@ class PPMDialog(GObject.GObject, PPMObject):
 
     def close_modem_response(self):
         self.modem_response_info_bar.hide()
-
-
-GObject.type_register(PPMDialog)
 
 
 class PPMInfoBar(object):
@@ -500,7 +501,7 @@ class PPMInfoBar(object):
     def hide(self):
         self.info_bar.hide()
         self.view.info_bar_container.remove(self.info_bar)
-        self.view.dialog.resize(1, 1)
+        self.view.resize(1, 1)
 
 
 class PPMEnableModemInfoBar(PPMInfoBar):
@@ -510,13 +511,13 @@ class PPMEnableModemInfoBar(PPMInfoBar):
         PPMInfoBar.__init__(self, view)
         self.info_bar.add_button(_("Enable"), Gtk.ResponseType.OK)
         self.info_bar.set_message_type(Gtk.MessageType.WARNING)
-        self.msg_label = Gtk.Label(_("Modem not enabled"))
+        self.msg_label = Gtk.Label(label=_("Modem not enabled"))
         content_area = self.info_bar.get_content_area()
         content_area.add(self.msg_label)
         self.msg_label.show()
         self.info_bar.connect("response", self.on_enable_clicked)
 
-    def on_enable_clicked(self, info_bar,  response_id):
+    def on_enable_clicked(self, info_bar, response_id):
         self.hide()
         self.controller.enable_modem()
 
@@ -533,13 +534,13 @@ class PPMModemResponseInfoBar(PPMInfoBar):
 
     def show(self):
         logging.debug("Awaiting modem resonse")
-        self.timer = GObject.timeout_add(50, self.do_progress,
-                                        priority=GLib.PRIORITY_HIGH)
+        self.timer = GLib.timeout_add(50, self.do_progress,
+                                      priority=GLib.PRIORITY_HIGH)
         PPMInfoBar.show(self)
 
     def hide(self):
         if self.timer:
-            GObject.source_remove(self.timer)
+            GLib.source_remove(self.timer)
             self.timer = None
         PPMInfoBar.hide(self)
 
@@ -552,37 +553,41 @@ class PPMNoModemFoundInfoBar(PPMInfoBar):
     def __init__(self, container):
         PPMInfoBar.__init__(self, container)
         self.info_bar.set_message_type(Gtk.MessageType.WARNING)
-        self.msg_label = Gtk.Label(_("No modem found."))
+        self.msg_label = Gtk.Label(label=_("No modem found."))
         content_area = self.info_bar.get_content_area()
         content_area.add(self.msg_label)
         self.info_bar.add_button(_("Try again"), Gtk.ResponseType.OK)
         self.info_bar.connect("response", self.on_try_again_clicked)
 
-    def on_try_again_clicked(self, info_bar,  response_id):
+    def on_try_again_clicked(self, info_bar, response_id):
         logging.debug("Rescheduling modem setup")
         self.hide()
         self.controller.schedule_setup()
 
 
-class PPMProviderAssistant(PPMObject):
-    PAGE_INTRO, PAGE_COUNTRIES, PAGE_PROVIDERS, PAGE_CONFIRM = range(0, 4)
+@Gtk.Template.from_resource('/org/gnome/PrepaidManager/ui/ppm-provider-assistant.ui')
+class PPMProviderAssistant(Gtk.Assistant):
+    PAGE_INTRO, PAGE_COUNTRIES, PAGE_PROVIDERS, PAGE_CONFIRM = list(range(0, 4))
+
+    __gtype_name__ = "PPMProviderAssistant"
+
+    vbox_countries = Gtk.Template.Child()
+    treeview_countries = Gtk.Template.Child()
+    vbox_providers = Gtk.Template.Child()
+    treeview_providers = Gtk.Template.Child()
+    liststore_providers = Gtk.Template.Child()
+    label_country = Gtk.Template.Child()
+    label_provider = Gtk.Template.Child()
 
     def __init__(self, main_dialog):
-        PPMObject.__init__(self, main_dialog, "ppm-provider-assistant")
-        self.assistant = self.builder.get_object("ppm_provider_assistant")
-        self._add_elements("vbox_countries",
-                           "treeview_countries",
-                           "vbox_providers",
-                           "treeview_providers",
-                           "liststore_providers",
-                           "label_country",
-                           "label_provider")
-        self.assistant.set_transient_for(main_dialog.dialog)
+        Gtk.Assistant.__init__(self)
+        self.set_transient_for(main_dialog)
         self.liststore_countries = None
         self.country_code = None
         self.provider = None
         self.possible_providers = None
         self.providers_initialized = False
+        self.controller = Gio.Application.get_default()
 
     def _get_current_country_from_locale(self):
         (l, enc) = locale.getlocale()
@@ -595,14 +600,13 @@ class PPMProviderAssistant(PPMObject):
         treeselection = self.treeview_countries.get_selection()
         treeselection.select_path(path)
         self.treeview_countries.scroll_to_cell(path)
-        self.assistant.set_page_complete(self.vbox_countries, True)
+        self.set_page_complete(self.vbox_countries, True)
 
     def _fill_liststore_countries(self):
         """Fille the countries liststore with all known countries"""
         lcode = self._get_current_country_from_locale()
         if not self.liststore_countries:
-            self.liststore_countries = self.builder.get_object(
-                                                         "liststore_countries")
+            self.liststore_countries = self.treeview_countries.get_model()
             for (country, code) in self.controller.get_provider_countries():
                 if country is None:
                     country = code
@@ -617,10 +621,10 @@ class PPMProviderAssistant(PPMObject):
         if current_page < self.PAGE_PROVIDERS:
             return self.PAGE_PROVIDERS
         else:
-            return current_page+1
+            return current_page + 1
 
     def _all_pages_func(self, current_page, user_data):
-        return current_page+1
+        return current_page + 1
 
     def show(self, providers=None):
         self.possible_providers = providers
@@ -630,17 +634,18 @@ class PPMProviderAssistant(PPMObject):
         if not self.possible_providers:
             # No list of possible providers so allow to select the country first
             self._fill_liststore_countries()
-            self.assistant.set_forward_page_func(self._all_pages_func, None)
+            self.set_forward_page_func(self._all_pages_func, None)
         else:
             # List of possible providers given, all from the same country
             self.country_code = self.possible_providers[0].country
-            self.assistant.set_forward_page_func(self._providers_only_page_func,
+            self.set_forward_page_func(self._providers_only_page_func,
                                                  None)
-        self.assistant.show()
+        Gtk.Widget.show(self)
 
     def close(self):
-        self.assistant.hide()
+        self.hide()
 
+    @Gtk.Template.Callback("on_ppm_provider_assistant_cancel")
     def on_ppm_provider_assistant_cancel(self, obj):
         logging.debug("Assistant canceled.")
         self.close()
@@ -659,8 +664,9 @@ class PPMProviderAssistant(PPMObject):
                                                0,
                                                provider.name)
 
+    @Gtk.Template.Callback("on_ppm_provider_assistant_prepare")
     def on_ppm_provider_assistant_prepare(self, obj, page):
-        if self.assistant.get_current_page() == self.PAGE_PROVIDERS:
+        if self.get_current_page() == self.PAGE_PROVIDERS:
             if self.possible_providers:
                 if self.providers_initialized:
                     return
@@ -674,28 +680,31 @@ class PPMProviderAssistant(PPMObject):
                 else:
                     self.providers_initialized = self.country_code
                 self._fill_provider_liststore_by_country_code(self.country_code)
-        elif self.assistant.get_current_page() == self.PAGE_CONFIRM:
+        elif self.get_current_page() == self.PAGE_CONFIRM:
             country = self.controller.get_country_by_code(self.country_code)
             label = country if country else self.country_code
             self.label_country.set_text(label)
             self.label_provider.set_text(self.provider)
 
+    @Gtk.Template.Callback("on_treeview_countries_changed")
     def on_treeview_countries_changed(self, obj):
         selection = self.treeview_countries.get_selection()
         (model, iter) = selection.get_selected()
         if not iter:
             return
         self.country_code = model.get_value(iter, 1)
-        self.assistant.set_page_complete(self.vbox_countries, True)
+        self.set_page_complete(self.vbox_countries, True)
 
+    @Gtk.Template.Callback("on_treeview_providers_changed")
     def on_treeview_providers_changed(self, obj):
         selection = self.treeview_providers.get_selection()
         (model, iter) = selection.get_selected()
         if not iter:
             return
         self.provider = model.get_value(iter, 0)
-        self.assistant.set_page_complete(self.vbox_providers, True)
+        self.set_page_complete(self.vbox_providers, True)
 
+    @Gtk.Template.Callback("on_ppm_provider_assistant_close")
     def on_ppm_provider_assistant_close(self, obj):
         logging.debug("Selected: %s  %s", self.provider, self.country_code)
         self.close()
@@ -713,22 +722,22 @@ class PPMProviderInfoMissingDialog(object):
                 'MobileBroadband/ServiceProviders\">GNOME Wiki</a>')
 
     def __init__(self, main_dialog):
-        self.dialog = Gtk.MessageDialog(parent=main_dialog.dialog,
-                                        flags=Gtk.DialogFlags.MODAL |
-                                              Gtk.DialogFlags.DESTROY_WITH_PARENT,
+        self.dialog = Gtk.MessageDialog(parent=main_dialog,
+                                        modal=True,
+                                        destroy_with_parent=True,
                                         message_type=Gtk.MessageType.INFO,
                                         buttons=Gtk.ButtonsType.OK)
         self.messages = {
             'balance_info_missing':
-                 _("We can't find the information on how to query the "
-                   "account balance from your provider '%s' in our database."),
+            _("We can't find the information on how to query the "
+              "account balance from your provider '%s' in our database."),
             'top_up_info_missing':
-                 _("We can't find the information on how to top up the "
-                   "balance for your provider '%s' in our database."),
+            _("We can't find the information on how to top up the "
+              "balance for your provider '%s' in our database."),
             'provider_unknown':
-                 _("We can't find any information about your provider with "
-                   "mcc '%s' and mnc '%s'.")
-            }
+            _("We can't find any information about your provider with "
+              "mcc '%s' and mnc '%s'.")
+        }
         self.common_msg = _("\n\nYou can go to the %s to learn how to provide that "
                             "information.")
 
@@ -742,7 +751,7 @@ class PPMProviderInfoMissingDialog(object):
         msg = self.messages['balance_info_missing'] % provider.name
         self._run(msg)
 
-    def top_upinfo_missing(self, provider):
+    def top_up_info_missing(self, provider):
         msg = self.messages['top_up_info_missing'] % provider.name
         self._run(msg)
 
@@ -752,6 +761,7 @@ class PPMProviderInfoMissingDialog(object):
 
 
 def setup_i18n():
+    global _
     locale.setlocale(locale.LC_ALL, '')
     gettext.install(ppm.gettext_app, ppm.gettext_dir)
     gettext.bindtextdomain(ppm.gettext_app, ppm.gettext_dir)
@@ -760,23 +770,10 @@ def setup_i18n():
     logging.debug('Using locale: %s', locale.getlocale())
 
 
-def setup_schemas():
-    """If we're running from the source tree add our gsettings schema to the
-    list of schema dirs"""
-
-    schema_dir = 'data'
-    schema = os.path.join(schema_dir,
-                          "%s.gschema.xml" % AccountDB.PPM_GSETTINGS_ID)
-    if os.path.exists(schema):
-        logging.debug("Running from source tree, adding local schema dir '%s'"
-                      % schema_dir)
-        os.environ["GSETTINGS_SCHEMA_DIR"] = "data"
-
-
 def setup_prgname():
     """Set the prgname since gnome-shell is application based"""
-    GLib.set_prgname(ppm.prgname)
-    Gdk.set_program_class(ppm.prgname)
+    GLib.set_prgname(ppm.app_id)
+    Gdk.set_program_class(ppm.app_id)
     GLib.set_application_name(_("Prepaid Manager"))
 
 
@@ -793,16 +790,17 @@ def main(args):
 
     logging.basicConfig(level=log_level,
                         format='ppm: %(levelname)s: %(message)s')
+    logging.debug("%s %s", ppm.app_id, ppm.version)
 
     setup_i18n()
     setup_prgname()
-    setup_schemas()
 
     controller = PPMController()
-    main_dialog = PPMDialog(controller)
+    PPMDialog(controller)
     controller.schedule_setup()
 
     Gtk.main()
+
 
 if __name__ == "__main__":
     try:

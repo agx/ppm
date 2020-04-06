@@ -1,5 +1,5 @@
 project('ppm',
-  version: '0.0.7',
+  version: '0.0.4',
   meson_version: '>= 0.49.0',
 )
 

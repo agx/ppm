@@ -88,6 +88,9 @@ class PPMController(Gtk.Application):
 
     def fetch_balance(self):
         """Fetch the current account balance from the  network"""
+        if not self.mm.modem.enabled:
+            self.view.show_modem_enable()
+
         if not self.provider.fetch_balance(self.mm,
                                            reply_func=self.on_balance_info_fetched,
                                            error_func=self.on_modem_error):
@@ -170,6 +173,11 @@ class PPMController(Gtk.Application):
         """Fetch the imsi and deduce account and provider information"""
 
         logging.debug("Fetching account information")
+
+        if not self.mm.modem.enabled:
+            self.view.show_modem_enable()
+            return False
+
         try:
             self.imsi = self.mm.get_imsi()
         except ModemError as me:
@@ -177,12 +185,8 @@ class PPMController(Gtk.Application):
             if me.is_forbidden():
                 self.view.show_provider_assistant()
                 return False
-            if not me.is_disabled():
-                self.view.show_modem_error(me.msg)
-                return False
 
-            logging.info("modem not enabled.")
-            self.view.show_modem_enable()
+            self.view.show_modem_error(me.msg)
             return False
 
         try:

@@ -25,7 +25,6 @@ MM_DBUS_TIMEOUT = 5000
 MM_DBUS_FLAGS = (Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES |
                  Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS)
 
-
 class ModemError(Exception):
     def __init__(self, msg):
         self.msg = msg
@@ -41,6 +40,8 @@ class Modem(GObject.GObject):
     MM_DBUS_INTERFACE_MODEM = 'org.freedesktop.ModemManager1.Modem'
     MM_DBUS_INTERFACE_MODEM_GSM_USSD = "{}.Modem3gpp.Ussd".format(MM_DBUS_INTERFACE_MODEM)
 
+    MM_STATE_ENABLED = 6
+
     def on_new_proxy_done(self, proxy, res, iface_name):
         try:
             _proxy = proxy.new_for_bus_finish(res)
@@ -55,7 +56,7 @@ class Modem(GObject.GObject):
 
         self._modem_proxy = None
         Gio.DBusProxy.new_for_bus(Gio.BusType.SYSTEM,
-                                  MM_DBUS_FLAGS,
+                                  Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS,
                                   None,
                                   MM_DBUS_SERVICE,
                                   self.path,
@@ -86,6 +87,11 @@ class Modem(GObject.GObject):
     @property
     def ussd_proxy(self):
         return self._ussd_proxy
+
+    @property
+    def enabled(self):
+        variant = self.modem_proxy.get_cached_property("State")
+        return variant.get_int32() >= self.MM_STATE_ENABLED
 
 
 class ModemManagerProxy(GObject.GObject):

@@ -18,6 +18,7 @@ from gi.repository import GObject
 from gi.repository import GLib
 from gi.repository import Gio
 
+import logging
 
 class ModemError(Exception):
     def __init__(self, msg):
@@ -59,7 +60,18 @@ class ModemManagerProxy(GObject.GObject):
         # Emitted when a request has finished
         'request-finished': (GObject.SignalFlags.RUN_FIRST, None,
                              [object]),
+        # Emitted when modem search completed
+        'got-modems': (GObject.SignalFlags.RUN_FIRST, None,
+                       [object]),
     }
+
+    def on_new_object_manager_done(self, obj, res):
+        try:
+            proxy = Gio.DBusProxy.new_for_bus_finish(res)
+        except GLib.Error:
+            logging.exception("Connecting to MM failed")
+        else:
+            self.object_manager = proxy
 
     def __init__(self):
         GObject.GObject.__init__(self)
@@ -71,15 +83,22 @@ class ModemManagerProxy(GObject.GObject):
         self.obj = None
         self.objs = None
 
+        self.object_manager = None
+        Gio.DBusProxy.new_for_bus(Gio.BusType.SYSTEM,
+                                  self.MM_DBUS_FLAGS,
+                                  None,
+                                  self.MM_DBUS_SERVICE,
+                                  self.MM_DBUS_OBJECT_MODEM_MANAGER,
+                                  self.DBUS_INTERFACE_OBJECT_MANAGER,
+                                  None,
+                                  self.on_new_object_manager_done)
+        self._modems = []
+
+    def ready(self):
+        return True if self.object_manager else False
+
     def get_objects(self):
-        mm = Gio.DBusProxy.new_sync(self.bus,
-                                    self.MM_DBUS_FLAGS,
-                                    None,
-                                    self.MM_DBUS_SERVICE,
-                                    self.MM_DBUS_OBJECT_MODEM_MANAGER,
-                                    self.DBUS_INTERFACE_OBJECT_MANAGER,
-                                    None)
-        self.objs = mm.GetManagedObjects()
+        self.objs = self.object_manager.GetManagedObjects()
 
     def objects(self):
         if self.objs is None:
@@ -120,6 +139,10 @@ class ModemManagerProxy(GObject.GObject):
         else:
             return False
 
+    @property
+    def modems(self):
+        return self._modems
+
     @mm_request_done
     def handle_dbus_reply(self, obj, result, user_data):
         try:
@@ -131,13 +154,36 @@ class ModemManagerProxy(GObject.GObject):
                 me = ModemError("%s failed: %s" % (self.request, err))
                 self.error_func(me)
 
-    def get_modems(self):
-        modems = []
-        self.get_objects()
-        for path, obj in self.objects().items():
-            if self.MM_DBUS_INTERFACE_MODEM in obj:
-                modems.append(path)
-        return modems
+    def on_get_managed_objects_finished(self, proxy, res, user_data):
+        self._modems = []
+
+        try:
+            objs = proxy.call_finish(res)
+        except Exception as err:
+            logging.error("Failed to get managed modems: %s", err)
+            objs = []
+            return
+
+        for obj in objs:
+            for path, ifaces in obj.items():
+                if self.MM_DBUS_INTERFACE_MODEM in ifaces:
+                    self._modems.append(path)
+        logging.debug("Found modems: %s", self.modems)
+        self.emit('got-modems', self)
+
+    def dbus_find_modems(self):
+        """
+        Async method to find modems
+
+        Result will be in modems property
+        """
+        self.object_manager.call("GetManagedObjects",
+                                 None,
+                                 Gio.DBusCallFlags.NO_AUTO_START,
+                                 self.MM_DBUS_TIMEOUT,
+                                 None,
+                                 self.on_get_managed_objects_finished,
+                                 None)
 
     def get_imsi(self):
         card = Gio.DBusProxy.new_sync(self.bus,

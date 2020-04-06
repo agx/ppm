@@ -70,10 +70,12 @@ class PPMController(Gtk.Application):
     def _connect_mm_signals(self):
         self.mm.connect('request-started', self.on_mm_request_started)
         self.mm.connect('request-finished', self.on_mm_request_finished)
+        self.mm.connect('got-modems', self.on_mm_got_modems)
 
     def __init__(self):
         Gtk.Application.__init__(self, application_id=ppm.app_id)
         self.mm = None
+        self.mm_tries = 0
         self.imsi = None
         self.provider = None
         self.account = None
@@ -202,29 +204,35 @@ class PPMController(Gtk.Application):
         # Everything worked out, disable the timer.
         return False
 
-    def setup(self):
-        logging.debug("Setting up")
-
-        self.mm = ModemManagerProxy()
-        self._connect_mm_signals()
-
-        try:
-            modems = self.mm.get_modems()
-        except ModemError as e:
-            logging.error("%s" % e.msg)
-            modems = None
-        if modems:
-            modem = modems[0]  # FIXME: handle multiple modems
+    def on_mm_got_modems(self, obj, mm_proxy):
+        if mm_proxy.modems:
+            modem = mm_proxy.modems[0]  # FIXME: handle multiple modems
             logging.debug("Using modem %s" % modem)
             self.mm.set_modem(modem)
             GLib.timeout_add(500, self.init_account_and_provider)
         else:
             self.view.show_no_modem_found()
+
+    def setup(self):
+        logging.debug("Setting up")
+        # Wait for MM Proxy to become ready:
+        if not self.mm.ready():
+            self.mm_tries += 1
+            logging.debug("Not yet ready, rescheduling")
+            return True
+        if self.mm_tries > 5:
+            self.view.show_no_modem_found()
+            return False
+
+        self.mm.dbus_find_modems()
         return False
 
     def schedule_setup(self):
         """Schedule another run of setup"""
-        GLib.timeout_add(1, self.setup)
+
+        self.mm = ModemManagerProxy()
+        self._connect_mm_signals()
+        GLib.timeout_add(500, self.setup)
 
     def enable_modem(self):
         """Enable the modem"""

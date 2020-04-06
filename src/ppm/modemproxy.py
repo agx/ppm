@@ -239,6 +239,3 @@ class ModemManagerProxy(GObject.GObject):
         self._modem_enable(False,
                            reply_func=reply_func,
                            error_func=error_func)
-
-
-GObject.type_register(ModemManagerProxy)

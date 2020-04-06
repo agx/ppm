@@ -51,9 +51,6 @@ class Account(GObject.GObject):
             self.props.timestamp = timestamp
 
 
-GObject.type_register(Account)
-
-
 class AccountDB(object):
     """
     In Gsettings we keep the detailed provider information that's associated

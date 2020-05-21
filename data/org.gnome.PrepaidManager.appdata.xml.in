@@ -5,11 +5,14 @@
     <project_license>GPL-3.0-or-later</project_license>
     <name>Prepaid manager</name>
     <description>
+      <p>
       GNOME Prepaid-manager-applet is an applet for the GNOME Desktop that
       allows you to check and top up the balance of GSM mobile prepaid SIM cards.
-
+      </p>
+      <p>
       It uses ModemManager to talk to the modem and mobile-broadband-provider-info
       to determine the necessary USSD codes for your provider.
+      </p>
     </description>
     <url type="homepage">https://honk.sigxcpu.org/piki/projects/ppm/</url>
     <updatecontact>agx@sigxcpu.org</updatecontact>

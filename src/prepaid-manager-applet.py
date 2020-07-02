@@ -17,7 +17,6 @@
 
 from builtins import str
 from builtins import range
-from past.utils import old_div
 from builtins import object
 import locale
 import logging
@@ -410,8 +409,7 @@ class PPMDialog(Gtk.ApplicationWindow):
         sensitive = True
 
         if self.code_len > 0:
-            self.entry_code.set_progress_fraction(old_div(float(cur_len),
-                                                  self.code_len))
+            self.entry_code.set_progress_fraction(cur_len / self.code_len)
             if cur_len != self.code_len:
                 sensitive = False
         self.button_top_up.set_sensitive(sensitive)

@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # vim: set fileencoding=utf-8 :
 #
-# (C) 2010,2011 Guido Guenther <agx@sigxcpu.org>
+# (C) 2010,2011,2020 Guido Guenther <agx@sigxcpu.org>
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation; either version 3 of the License, or
@@ -41,10 +41,10 @@ from gi.repository import Gdk  # noqa: E402
 
 _ = None
 
+
 # Needs to happen early so we can use it to create classes based on templates
 resource = Gio.Resource.load(os.path.join(ppm.data_dir, "ppm.gresource"))
 resource._register()
-
 
 # The controller receives input and initiates a response by making calls on model
 # objects. A controller accepts input from the user and instructs the model and
@@ -318,8 +318,21 @@ class PPMController(Gtk.Application):
 
         self.view.update_account_balance_information(balance, timestamp)
 
+# Views
+@Gtk.Template.from_resource('/org/gnome/PrepaidManager/ui/ppm-error-dialog.ui')
+class PPMErrorDialog(Gtk.Dialog):
+    __gtype_name__ = "PPMErrorDialog"
+    error_origin = Gtk.Template.Child()
+    error_detail = Gtk.Template.Child()
+    
+    def __init__(self, origin, detail):
+        Gtk.Dialog.__init__(self)
 
-# View
+        self.error_origin.set_text(origin)
+        self.error_detail.set_text(detail)
+        self.set_title(GLib.get_application_name())
+        
+
 @Gtk.Template.from_resource('/org/gnome/PrepaidManager/ui/ppm.ui')
 class PPMDialog(Gtk.ApplicationWindow):
     __gtype_name__ = "PPMDialog"
@@ -448,14 +461,10 @@ class PPMDialog(Gtk.ApplicationWindow):
         self.provider_info_missing_dialog.provider_unknown(mcc, mnc)
 
     def show_modem_error(self, msg):
-        dialog = Gtk.MessageDialog(parent=self,
-                                   modal=True,
-                                   destroy_with_parent=True,
-                                   message_type=Gtk.MessageType.ERROR,
-                                   buttons=Gtk.ButtonsType.OK)
-        dialog.set_markup("Modem error: %s" % msg)
+        logging.debug(msg)
+        dialog = PPMErrorDialog(_("Modem error"), msg)
         dialog.run()
-        dialog.hide()
+        dialog.destroy()
 
     def show_modem_enable(self):
         self.enable_modem_info_bar.show()
@@ -470,14 +479,9 @@ class PPMDialog(Gtk.ApplicationWindow):
     def show_error(self, msg):
         """show generic error"""
         logging.debug(msg)
-        error = Gtk.MessageDialog(parent=self,
-                                  modal=True,
-                                  destroy_with_parent=True,
-                                  message_type=Gtk.MessageType.ERROR,
-                                  buttons=Gtk.ButtonsType.OK)
-        error.set_markup(msg)
-        error.run()
-        error.hide()
+        dialog = PPMErrorDialog(_("Error"), msg)
+        dialog.run()
+        dialog.destroy()
 
     def show_modem_response(self):
         self.modem_response_info_bar.show()

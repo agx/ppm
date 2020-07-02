@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/org/gnome/PrepaidManager">
     <file>ui/ppm.ui</file>
+    <file>ui/ppm-error-dialog.ui</file>
     <file>ui/ppm-provider-assistant.ui</file>
   </gresource>
 </gresources>

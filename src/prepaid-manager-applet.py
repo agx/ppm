@@ -736,7 +736,7 @@ class PPMProviderInfoMissingDialog(object):
             _("We can't find any information about your provider with "
               "mcc '%s' and mnc '%s'.")
         }
-        self.common_msg = _("\n\nYou can go to the %s to learn how to provide that "
+        self.common_msg = _("\n\nYou can go to %s to learn how to provide that "
                             "information.")
 
     def _run(self, msg):

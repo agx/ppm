@@ -207,7 +207,16 @@ class ModemManagerProxy(GObject.GObject):
                 self.reply_func(res, user_data)
         except Exception as err:
             if self.error_func:
-                me = ModemError("%s failed: %s" % (self.request, err))
+                # We don't get a proper error domain so we assume
+                # 'GDBus.Error:org.freedesktop.*: <error message>
+                msg = err.message.split(':', 2)
+                if len(msg) == 3:
+                    msg = msg[-1]
+                else:
+                    msg = err.message
+                print(msg)
+                me = ModemError("%s failed: %s" % (self.request.replace('_', ' '),
+                                                   msg))
                 self.error_func(me)
 
     def on_get_managed_objects_finished(self, proxy, res, user_data):

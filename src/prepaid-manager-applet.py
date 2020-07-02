@@ -285,8 +285,8 @@ class PPMController(Gtk.Application):
         GLib.timeout_add(500, self.init_account_and_provider)
 
     def on_modem_error(self, e):
-        self.view.show_modem_error(e.msg)
         logging.error(e.msg)
+        self.view.show_modem_error(e.msg)
         # The modem might have disconnected. So reschedule the setup
         self.schedule_setup()
 

@@ -318,6 +318,7 @@
                   <object class="GtkLabel" id="label_top_up_reply">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="wrap">True</property>
                   </object>
                   <packing>
                     <property name="right_attach">3</property>

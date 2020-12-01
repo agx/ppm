@@ -20,4 +20,8 @@
       <screenshot type="default" width="411" height="183">https://honk.sigxcpu.org/piki/projects/ppm/check.png</screenshot>
       <screenshot width="411" height="183">https://honk.sigxcpu.org/piki/projects/ppm/topup.png</screenshot>
     </screenshots>
+    <custom>
+      <value key="Purism::form_factor">workstation</value>
+      <value key="Purism::form_factor">mobile</value>
+    </custom>
 </component>

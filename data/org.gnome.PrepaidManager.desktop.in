@@ -6,3 +6,4 @@ Terminal=false
 Type=Application
 Categories=GNOME;GTK;Utility;Network;
 Icon=ppm
+X-Purism-FormFactor=Workstation;Mobile;
